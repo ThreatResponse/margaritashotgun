@@ -1,2 +1,4 @@
-#!/bin/bash
-python margaritashotgun/cli.py $@
+#!/usr/bin/env python
+from margaritashotgun.margaritashotgun import margaritashotgun
+ms = margaritashotgun()
+ms.run()
