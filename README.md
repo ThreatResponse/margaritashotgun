@@ -2,7 +2,7 @@
 
 ## Installing
 
-`pip install -r requirements.txt`
+`pip install git+git://github.com/joelferrier/margaitashotgun.git@develop`
 
 ## Usage
 
@@ -46,6 +46,12 @@ To upload to s3 use the following format:
           module:   lime-4.1.19-24.31.amzn1.x86_64.ko
 
 To write to a local file exclude the aws section from configuration  
+
+## Building
+
+`python setup.py sdist` places build artifacts in `dist/`  
+
+Install with `pip install dist/margarita_shotgun-0.1.0.tar.gz`  
 
 ## License
 
