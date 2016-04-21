@@ -2,7 +2,7 @@
 
 ## Installing
 
-`pip install git+git://github.com/joelferrier/margaitashotgun.git@develop`
+`pip install git+git://github.com/joelferrier/margaritashotgun.git@develop`
 
 ## Usage
 
