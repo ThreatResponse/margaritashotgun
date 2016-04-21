@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from cli import cli
+
 class margaritashotgun():
 
     def run(self):

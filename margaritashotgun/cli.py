@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import os
 import argparse
-from margaritashotgun.server import server
-from margaritashotgun.tunnel import tunnel
+from server import server
+from tunnel import tunnel
 import yaml
-from margaritashotgun.memory import memory
+from memory import memory
 
 class cli():
 
