@@ -18,8 +18,14 @@ class api():
         return False
 
     def port_specified(self, host):
-        #return true if a port is specified in the config
-        return True
+        try:
+            if host['Port'] == None:
+                ret = False
+            else:
+                ret = True
+        except KeyError:
+            ret = False
+        return ret
 
     def select_auth_method(self, host):
         if 'keyfile' in host and 'password' in host:
