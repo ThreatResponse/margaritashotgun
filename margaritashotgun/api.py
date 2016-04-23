@@ -14,7 +14,7 @@ class api():
 
     # return false if config is valid
     def invalid_config(self, config):
-        print("todo config verify")
+        #print("todo config verify")
         return False
 
     def port_specified(self, host):
