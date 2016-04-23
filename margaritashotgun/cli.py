@@ -11,14 +11,6 @@ class cli():
     def __init__(self):
         self.config = self.parse_args()
 
-    def module_missing(self, module_name):
-        try:
-            __import__(module_name)
-        except ImportError as e:
-            return True
-        else:
-            return False
-
     def parse_args(self):
         parser = argparse.ArgumentParser(description='TODO description')
         parser.add_argument('-P', '--port', help='ssh port on remote server')#,
