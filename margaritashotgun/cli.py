@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-import os
 import argparse
+import yaml
 from server import server
 from tunnel import tunnel
-import yaml
 from memory import memory
 
 class cli():
 
-    def __init__(self):
-        self.config = self.parse_args()
+    #def __init__(self):
+    #    self.config = self.parse_args()
+    #    self.api = api()
 
     def parse_args(self):
         parser = argparse.ArgumentParser(description='TODO description')
@@ -69,70 +69,3 @@ class cli():
         else:
             return False
 
-    def run(self):
-        for host in self.config['hosts']:
-            if host['port']:
-                port = int(host['port'])
-            else:
-                port = 22
-            ssh_tunnel = tunnel(host['addr'], port, host['username'])
-            remote = server(host['addr'], port, host['username'])
-            if 'keyfile' in host and 'password' in host:
-
-                ssh_tunnel.connect_with_encrypted_keyfile(host['keyfile'],
-                                                          host['password'])
-                remote.connect_with_encrypted_keyfile(host['keyfile'],
-                                                      host['password'])
-            elif 'keyfile' in host:
-                ssh_tunnel.connect_with_keyfile(host['keyfile'])
-                remote.connect_with_keyfile(host['keyfile'])
-            elif 'password' in host:
-                ssh_tunnel.connect_with_password(host['password'])
-                remote.connect_with_password(host['password'])
-            else:
-                print("no authentication method specified")
-                quit()
-            status_ok = remote.test_conn()
-            if status_ok == False:
-                print("SSH connection failed ... exiting")
-                quit()
-            memsize = remote.get_mem_size()
-            remote.upload_file(host['module'], 'lime.ko')
-            remote.execute_async('sudo insmod ./lime.ko "path=tcp:4000 format=lime"')
-            ssh_tunnel.start(4000, '127.0.0.1', 4000)
-            lime_loaded = remote.wait_for_lime()
-            if lime_loaded:
-                mem = memory('127.0.0.1', 4000, memsize)
-                # unpack config items
-                try:
-                    bucket = self.config['aws']['bucket']
-                    key    = self.config['aws']['key']
-                    secret = self.config['aws']['secret']
-                except KeyError as e:
-                    bucket = None
-                    key    = None
-                    secret = None
-                    #print(e)
-
-                filename='{}-mem.lime'.format(host['addr'])
-
-                if bucket != None and key != None and secret != None:
-                    print('{} dumping memory to s3://{}/{}'.format(host['addr'],
-                                                                   bucket,
-                                                                   filename))
-                    mem.to_s3(key_id=key,
-                                  secret_key=secret,
-                                  bucket=bucket,
-                                  filename=filename)
-                else:
-                    print('{} dumping memory to {}'.format(host['addr'],
-                                                           filename))
-                    mem.to_file(filename)
-            else:
-                print("Lime failed to load ... exiting")
-            remote.execute('sudo rmmod lime.ko')
-            ssh_tunnel.stop()
-
-if __name__=='__main__':
-    c = cli()
-    c.run()
