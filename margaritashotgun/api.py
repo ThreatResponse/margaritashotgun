@@ -82,6 +82,10 @@ class api():
         command = 'sudo insmod ./lime.ko "path=tcp:{} format=lime"'.format(tun_port)
         remote.execute_async(command)
 
+    def cleanup_lime(self, remote):
+        command = 'sudo rmmod lime.ko'
+        remote.execute(command)
+
     def dump_memory(self, config, host, tunnel, remote, tun_port):
         tunnel.start(tun_port, '127.0.0.1', tun_port)
         lime_loaded = remote.wait_for_lime(port=tun_port)
