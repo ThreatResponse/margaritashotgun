@@ -83,7 +83,11 @@ class server():
     def execute_async(self, command):
         worker = async_worker(command, self.ssh)
         self.threads.append(worker)
+        #worker.daemon=True
         worker.start()
+
+    def cleanup(self):
+        self.ssh.close()
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.ssh.close()
@@ -96,5 +100,5 @@ class async_worker(threading.Thread):
         self.ssh     = ssh
 
     def run(self):
-        stdin, stdout, stderr = self.ssh.exec_command(self.command)
+        stdin, stdout, stderr = self.ssh.exec_command(self.command, timeout=60)
 

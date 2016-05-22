@@ -36,16 +36,17 @@ class tunnel():
                                pkey     = key)
 
     def start(self, local_port, remote_host, remote_port):
-        self.thread = forward(local_port,
+        self.forward = forward(local_port,
                               remote_host,
                               remote_port,
                               self.transport,
                               self.verbose)
-        self.thread.start()
+        self.forward.start()
 
-    def stop(self):
-        self.thread.stop()
-        self.thread.join()
+    def cleanup(self):
+        if self.forward:
+            self.forward.stop()
+        self.transport.close()
 
 class ForwardServer (socketserver.ThreadingTCPServer):
     daemon_threads = True
@@ -120,4 +121,5 @@ class forward(threading.Thread):
 
     def stop(self):
         self.server.shutdown()
+        self.server.server_close()
 
