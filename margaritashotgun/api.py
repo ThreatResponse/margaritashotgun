@@ -6,6 +6,9 @@ from memory import memory
 
 class api():
 
+    def __init__(self, logger):
+        self.logger = logger
+
     # TODO:(joel) validate config
     def invalid_config(self, config):
         return False
@@ -29,7 +32,7 @@ class api():
             auth = 'password'
         else:
             #TODO(joel): raise exception
-            print('no auth method specified')
+            self.logger.info('no auth method specified')
             quit()
         return auth
 
@@ -51,7 +54,7 @@ class api():
             tun.connect_with_password(host['password'])
         else:
             #TODO(joel): raise exception
-            print('no auth method specified')
+            self.logger.info('no auth method specified')
             quit()
         return tun
 
@@ -66,7 +69,7 @@ class api():
             rem.connect_with_password(host['password'])
         else:
             #TODO(joel): raise exception
-            print('no auth method specified')
+            self.logger.info('no auth method specified')
             quit()
         return rem
 
@@ -85,7 +88,7 @@ class api():
         memsize = remote.get_mem_size()
 
         if lime_loaded:
-            mem = memory('127.0.0.1', tun_port, memsize)
+            mem = memory('127.0.0.1', tun_port, memsize, self.logger)
             try:
                 bucket = config['aws']['bucket']
                 key    = config['aws']['key']
@@ -98,19 +101,19 @@ class api():
             filename='{}-mem.lime'.format(host['addr'])
 
             if bucket != None and key != None and secret != None:
-                print('{} dumping memory to s3://{}/{}'.format(host['addr'],
-                                                               bucket,
-                                                               filename))
+                self.logger.info('{} dumping memory to s3://{}/{}'.format(host['addr'],
+                                                                          bucket,
+                                                                          filename))
                 mem.to_s3(key_id=key,
                           secret_key=secret,
                           bucket=bucket,
                           filename=filename)
             else:
-                print('{} dumping memory to {}'.format(host['addr'],
-                                                       filename))
+                self.logger.info('{} dumping memory to {}'.format(host['addr'],
+                                                                  filename))
                 mem.to_file(filename)
         else:
-            print("Lime failed to load ... exiting")
+            self.logger.info("Lime failed to load ... exiting")
         remote.execute('sudo rmmod lime.ko')
         tunnel.cleanup()
 

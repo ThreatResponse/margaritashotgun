@@ -13,13 +13,13 @@ class margaritashotgun():
         streamhandler = logging.StreamHandler(sys.stdout)
         self.logger.setLevel(logging.INFO)
         formatter = logging.Formatter(
-            '%(aasctime)s - %(name)s - %(levelname)s - %(message)s'
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         streamhandler.setFormatter(formatter)
         self.logger.addHandler(streamhandler)
 
     def set_config(self, config):
-        a = api()
+        a = api(logger=self.logger)
         self.config = config
         if a.invalid_config(self.config):
             self.logger.info("config_verify_fail exiting")
@@ -31,7 +31,7 @@ class margaritashotgun():
     def run(self):
         try:
             c = cli()
-            a = api()
+            a = api(self.logger)
             self.config = c.parse_args()
             self.remotes = []
             self.tunnels = []
