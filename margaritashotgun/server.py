@@ -11,7 +11,6 @@ class server():
         self.server = server
         self.port = port
         self.username = username
-        self.threads = []
         self.verbose = verbose
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.logger = logger
@@ -83,7 +82,6 @@ class server():
 
     def execute_async(self, command):
         worker = async_worker(command, self.ssh)
-        self.threads.append(worker)
         worker.start()
 
     def cleanup(self):
