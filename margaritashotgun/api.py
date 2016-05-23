@@ -120,7 +120,7 @@ class api():
         else:
             print("Lime failed to load ... exiting")
         remote.execute('sudo rmmod lime.ko')
-        tunnel.stop()
+        tunnel.cleanup()
 
 if __name__=="__main__":
     api = api()

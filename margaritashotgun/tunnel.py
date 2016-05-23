@@ -46,6 +46,7 @@ class tunnel():
     def cleanup(self):
         if self.forward:
             self.forward.stop()
+            self.forward.join(20)
         self.transport.close()
 
 class ForwardServer (socketserver.ThreadingTCPServer):
