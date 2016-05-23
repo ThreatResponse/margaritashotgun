@@ -7,16 +7,17 @@ import s3fs
 
 class memory():
 
-    def __init__(self, remote_host, remote_port, memsize, logger):
-        self.remote_host = remote_host
-        self.remote_port = remote_port
-        self.recv_size   = 1024*1024
-        self.memsize     = memsize
-        padding          = memsize * 0.03
-        self.maxsize     = memsize + padding
-        self.transfered  = 0
-        self.widgets     = [Percentage(), ' ', Bar(), ' ', ETA(), ' ', FileTransferSpeed()]
-        self.logger      = logger
+    def __init__(self, remote_host, remote_port, memsize, logger, recv_size=1048576, sock_timeout=2):
+        self.remote_host  = remote_host
+        self.remote_port  = remote_port
+        self.recv_size    = recv_size
+        self.memsize      = memsize
+        padding           = memsize * 0.03
+        self.maxsize      = memsize + padding
+        self.transfered   = 0
+        self.widgets      = [Percentage(), ' ', Bar(), ' ', ETA(), ' ', FileTransferSpeed()]
+        self.sock_timeout = sock_timeout
+        self.logger       = logger
 
     def to_file(self, filename):
         self.pbar = ProgressBar(widgets=self.widgets, maxval=self.maxsize).start()
@@ -26,7 +27,7 @@ class memory():
         with open(filename, 'wb') as self.outfile:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.remote_host, self.remote_port))
-            self.sock.settimeout(2)
+            self.sock.settimeout(self.sock_timeout)
             while True:
                 try:
                     data = self.sock.recv(self.recv_size)
@@ -73,7 +74,7 @@ class memory():
         with s3.open('{}/{}'.format(bucket, filename), 'wb') as self.outfile:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.remote_host, self.remote_port))
-            self.sock.settimeout(2)
+            self.sock.settimeout(self.sock_timeout)
 
             while True:
                 try:
