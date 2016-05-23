@@ -35,7 +35,6 @@ class margaritashotgun():
             self.config = c.parse_args()
             self.remotes = []
             self.tunnels = []
-            # check config is valid
             if a.invalid_config(self.config):
                 self.logger.info("config_verify_fail exiting")
                 quit()
@@ -54,6 +53,7 @@ class margaritashotgun():
                 a.install_lime(host, remote, tun_port)
                 a.dump_memory(self.config, host, tun, remote, tun_port)
                 a.cleanup_lime(remote)
+
         except KeyboardInterrupt:
             for tunnel in self.tunnels:
                 tunnel.cleanup()

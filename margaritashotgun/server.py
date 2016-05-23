@@ -37,8 +37,6 @@ class server():
     def test_conn(self):
         try:
             stdin, stdout, stderr = self.ssh.exec_command('ls -a')
-            #for line in stdout:
-            #    print(line.strip('\n'))
             if stdin != None:
                 connection_status = True
             else:
@@ -83,7 +81,6 @@ class server():
     def execute_async(self, command):
         worker = async_worker(command, self.ssh)
         self.threads.append(worker)
-        #worker.daemon=True
         worker.start()
 
     def cleanup(self):

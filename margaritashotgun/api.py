@@ -6,15 +6,8 @@ from memory import memory
 
 class api():
 
-    #def __init__(config):
-    #    self.config = config
-
-    def test(self):
-        print("test")
-
-    # return false if config is valid
+    # TODO:(joel) validate config
     def invalid_config(self, config):
-        #print("todo config verify")
         return False
 
     def port_specified(self, host):
@@ -101,7 +94,6 @@ class api():
                 bucket = None
                 key    = None
                 secret = None
-                #print(e)
 
             filename='{}-mem.lime'.format(host['addr'])
 

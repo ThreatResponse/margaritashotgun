@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import argparse
 import yaml
 from server import server
@@ -6,10 +7,6 @@ from tunnel import tunnel
 from memory import memory
 
 class cli():
-
-    #def __init__(self):
-    #    self.config = self.parse_args()
-    #    self.api = api()
 
     def parse_args(self):
         parser = argparse.ArgumentParser(description='TODO description')
