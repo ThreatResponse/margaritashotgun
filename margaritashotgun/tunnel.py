@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import errno
 import paramiko
 import socket
 import select
@@ -46,7 +47,7 @@ class tunnel():
     def cleanup(self):
         if self.forward:
             self.forward.stop()
-            self.forward.join(20)
+            self.forward.join()
         self.transport.close()
 
 class ForwardServer (socketserver.ThreadingTCPServer):
@@ -85,7 +86,15 @@ class Handler (socketserver.BaseRequestHandler):
                     break
                 self.request.send(data)
 
-        peername = self.request.getpeername()
+        try:
+            peername = self.request.getpeername()
+        except socket.error as e:
+            errorcode = e[0]
+            if errorcode == errno.ENOTCONN:
+                chan.close()
+                self.request.close()
+                self.log('Tunnel closed, remote end disconnected')
+                return
         chan.close()
         self.request.close()
         self.log('Tunnel closed from %r' % (peername,))
