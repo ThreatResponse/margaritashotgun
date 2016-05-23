@@ -8,6 +8,9 @@ from memory import memory
 
 class cli():
 
+    def __init__(self, logger):
+        self.logger = logger
+
     def parse_args(self):
         parser = argparse.ArgumentParser(description='TODO description')
         parser.add_argument('-P', '--port', help='ssh port on remote server')#,
@@ -24,12 +27,12 @@ class cli():
 
         if arguments.keyfile:
             if self.verify_file_path(arguments.keyfile) is False:
-                print("Invalid private key path: {0}".format(arguments.keyfile))
+                self.logger.info("Invalid private key path: {0}".format(arguments.keyfile))
                 quit()
 
         if arguments.module:
             if self.verify_file_path(arguments.module) is False:
-                print("Invalid kernel module path: {0}".format(arguments.module))
+                self.logger.info("Invalid kernel module path: {0}".format(arguments.module))
                 quit()
 
         if arguments.config is None:
@@ -52,10 +55,10 @@ class cli():
                     try:
                         config = yaml.load(stream)
                     except yaml.YAMLError as ex:
-                        print('Invalid config format: {0}'.format(ex))
+                        self.logger.info('Invalid config format: {0}'.format(ex))
                         quit()
             except IOError as ex:
-                print('Invalid config path: {0}'.format(arguments.config_file))
+                self.logger.info('Invalid config path: {0}'.format(arguments.config_file))
                 quit()
 
         return config

@@ -44,7 +44,7 @@ class api():
         return port
 
     def establish_tunnel(self, host, port, auth):
-        tun = tunnel(host['addr'], port, host['username'])
+        tun = tunnel(host['addr'], port, host['username'], self.logger)
         if auth == 'encrypted_key_file':
             tun.connect_with_encrypted_keyfile(host['keyfile'],
                                                host['password'])
@@ -59,7 +59,7 @@ class api():
         return tun
 
     def establish_remote_session(self, host, port, auth):
-        rem = server(host['addr'], port, host['username'])
+        rem = server(host['addr'], port, host['username'], self.logger)
         if auth == 'encrypted_key_file':
             rem.connect_with_encrypted_keyfile(host['keyfile'],
                                                   host['password'])

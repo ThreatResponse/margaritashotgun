@@ -30,7 +30,7 @@ class margaritashotgun():
 
     def run(self):
         try:
-            c = cli()
+            c = cli(self.logger)
             a = api(self.logger)
             self.config = c.parse_args()
             self.remotes = []

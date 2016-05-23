@@ -5,14 +5,15 @@ import threading
 import time
 
 class server():
-    def __init__(self, server, port, username, verbose=False):
+    def __init__(self, server, port, username, logger, verbose=False):
         self.ssh      = paramiko.SSHClient()
         self.server   = server
         self.port     = port
         self.username = username
         self.threads  = []
-        self.verbose  = False
+        self.verbose  = verbose
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.logger   = logger
 
     def connect_with_password(self, password):
         self.ssh.connect(hostname = self.server,

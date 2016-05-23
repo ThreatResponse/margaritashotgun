@@ -14,10 +14,11 @@ except ImportError:
 
 class tunnel():
 
-    def __init__(self, ssh_host, ssh_port, username, verbose=False):
+    def __init__(self, ssh_host, ssh_port, username, logger, verbose=False):
         self.transport = paramiko.Transport((ssh_host, ssh_port))
         self.username  = username
         self.verbose   = verbose
+        self.logger    = logger
 
     def connect_with_password(self,password):
         self.transport.connect(hostkey  = None,
@@ -41,6 +42,7 @@ class tunnel():
                               remote_host,
                               remote_port,
                               self.transport,
+                              self.logger,
                               self.verbose)
         self.forward.start()
 
@@ -62,17 +64,17 @@ class Handler (socketserver.BaseRequestHandler):
                                                    (self.chain_host, self.chain_port),
                                                    self.request.getpeername())
         except Exception as e:
-            self.log('Incoming request to %s:%d failed: %s' % (self.chain_host,
-                                                              self.chain_port,
-                                                              repr(e)))
+            self.log('Incoming request to {}:{} failed: {}'.format(self.chain_host,
+                                                                   self.chain_port,
+                                                                   repr(e)))
             return
         if chan is None:
-            self.log('Incoming request to %s:%d was rejected by the SSH server.' %
-                    (self.chain_host, self.chain_port))
+            self.log('Incoming request to %s:%d was rejected by the SSH server.'.format(
+                        (self.chain_host, self.chain_port)))
             return
 
-        self.log('Connected!  Tunnel open %r -> %r -> %r' % (self.request.getpeername(),
-                                                            chan.getpeername(), (self.chain_host, self.chain_port)))
+        self.log('tunnel open {} -> {} -> {}'.format(self.request.getpeername(),
+                                                     chan.getpeername(), (self.chain_host, self.chain_port)))
         while True:
             r, w, x = select.select([self.request, chan], [], [])
             if self.request in r:
@@ -93,26 +95,26 @@ class Handler (socketserver.BaseRequestHandler):
             if errorcode == errno.ENOTCONN:
                 chan.close()
                 self.request.close()
-                self.log('Tunnel closed, remote end disconnected')
+                self.log('Tunnel closed remote end disconnected')
                 return
         chan.close()
         self.request.close()
-        self.log('Tunnel closed from %r' % (peername,))
+        self.log('Tunnel closed from {}'.format(peername))
 
     def log(self, string):
         if self.verbose:
-            print(string)
+            self.logger.info(string)
 
 class forward(threading.Thread):
 
-    def __init__(self, local_port, remote_host, remote_port, transport, verbose=False):
+    def __init__(self, local_port, remote_host, remote_port, transport, logger, verbose=False):
         super(forward, self).__init__()
         self.local_port  = local_port
         self.remote_host = remote_host
         self.remote_port = remote_port
         self.transport   = transport
+        self.logger      = logger
         self.verbose     = verbose
-
 
     def run(self):
         self.forward_tunnel(self.local_port,
@@ -125,6 +127,7 @@ class forward(threading.Thread):
             chain_host    = remote_host
             chain_port    = remote_port
             ssh_transport = transport
+            logger        = self.logger
             verbose       = self.verbose
         self.server = ForwardServer(('', local_port), SubHandler)
         self.server.serve_forever()
