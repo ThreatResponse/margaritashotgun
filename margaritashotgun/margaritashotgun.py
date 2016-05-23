@@ -6,6 +6,7 @@ import logging
 from cli import cli
 from api import api
 
+
 class margaritashotgun():
 
     def __init__(self):
@@ -27,7 +28,6 @@ class margaritashotgun():
         else:
             return True
 
-
     def run(self):
         try:
             c = cli(self.logger)
@@ -40,13 +40,13 @@ class margaritashotgun():
                 quit()
 
             for host in self.config['hosts']:
-                port   = a.select_port(host)
-                auth   = a.select_auth_method(host)
-                tun    = a.establish_tunnel(host, port, auth)
+                port = a.select_port(host)
+                auth = a.select_auth_method(host)
+                tun = a.establish_tunnel(host, port, auth)
                 self.tunnels.append(tun)
                 remote = a.establish_remote_session(host, port, auth)
                 self.remotes.append(remote)
-                if remote.test_conn() == False:
+                if remote.test_conn() is False:
                     self.logger.info("SSH connection failed ... exiting")
                     quit()
                 tun_port = random.randint(32768, 61000)
@@ -62,7 +62,6 @@ class margaritashotgun():
                 remote.cleanup()
             sys.exit()
 
-if __name__=="__main__":
+if __name__ == "__main__":
     ms = margaritashotgun()
     ms.run()
-

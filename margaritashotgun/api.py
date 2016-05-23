@@ -4,6 +4,7 @@ from server import server
 from tunnel import tunnel
 from memory import memory
 
+
 class api():
 
     def __init__(self, logger):
@@ -15,7 +16,7 @@ class api():
 
     def port_specified(self, host):
         try:
-            if host['Port'] == None:
+            if host['Port'] is None:
                 ret = False
             else:
                 ret = True
@@ -31,7 +32,7 @@ class api():
         elif 'password' in host:
             auth = 'password'
         else:
-            #TODO(joel): raise exception
+            # TODO(joel): raise exception
             self.logger.info('no auth method specified')
             quit()
         return auth
@@ -53,7 +54,7 @@ class api():
         elif auth == 'password':
             tun.connect_with_password(host['password'])
         else:
-            #TODO(joel): raise exception
+            # TODO(joel): raise exception
             self.logger.info('no auth method specified')
             quit()
         return tun
@@ -62,21 +63,22 @@ class api():
         rem = server(host['addr'], port, host['username'], self.logger)
         if auth == 'encrypted_key_file':
             rem.connect_with_encrypted_keyfile(host['keyfile'],
-                                                  host['password'])
+                                               host['password'])
         elif auth == 'key_file':
             rem.connect_with_keyfile(host['keyfile'])
         elif auth == 'password':
             rem.connect_with_password(host['password'])
         else:
-            #TODO(joel): raise exception
+            # TODO(joel): raise exception
             self.logger.info('no auth method specified')
             quit()
         return rem
 
     def install_lime(self, host, remote, tun_port):
         remote.upload_file(host['module'], 'lime.ko')
-        command = 'sudo insmod ./lime.ko "path=tcp:{} format=lime"'.format(tun_port)
-        remote.execute_async(command)
+        cmd = 'sudo insmod ./lime.ko "path=tcp:{} format=lime"'.format(
+              tun_port)
+        remote.execute_async(cmd)
 
     def cleanup_lime(self, remote):
         command = 'sudo rmmod lime.ko'
@@ -91,19 +93,21 @@ class api():
             mem = memory('127.0.0.1', tun_port, memsize, self.logger)
             try:
                 bucket = config['aws']['bucket']
-                key    = config['aws']['key']
+                key = config['aws']['key']
                 secret = config['aws']['secret']
             except KeyError as e:
                 bucket = None
-                key    = None
+                key = None
                 secret = None
 
-            filename='{}-mem.lime'.format(host['addr'])
+            filename = '{}-mem.lime'.format(host['addr'])
 
-            if bucket != None and key != None and secret != None:
-                self.logger.info('{} dumping memory to s3://{}/{}'.format(host['addr'],
-                                                                          bucket,
-                                                                          filename))
+            if bucket is not None and key is not None and secret is not None:
+                self.logger.info('{} dumping memory to s3://{}/{}'.format(
+                                 host['addr'],
+                                 bucket,
+                                 filename))
+
                 mem.to_s3(key_id=key,
                           secret_key=secret,
                           bucket=bucket,
@@ -116,8 +120,3 @@ class api():
             self.logger.info("Lime failed to load ... exiting")
         remote.execute('sudo rmmod lime.ko')
         tunnel.cleanup()
-
-if __name__=="__main__":
-    api = api()
-    api.test()
-

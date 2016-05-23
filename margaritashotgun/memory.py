@@ -5,22 +5,26 @@ import errno
 import socket
 import s3fs
 
+
 class memory():
 
-    def __init__(self, remote_host, remote_port, memsize, logger, recv_size=1048576, sock_timeout=2):
-        self.remote_host  = remote_host
-        self.remote_port  = remote_port
-        self.recv_size    = recv_size
-        self.memsize      = memsize
-        padding           = memsize * 0.03
-        self.maxsize      = memsize + padding
-        self.transfered   = 0
-        self.widgets      = [Percentage(), ' ', Bar(), ' ', ETA(), ' ', FileTransferSpeed()]
+    def __init__(self, remote_host, remote_port, memsize, logger,
+                 recv_size=1048576, sock_timeout=2):
+        self.remote_host = remote_host
+        self.remote_port = remote_port
+        self.recv_size = recv_size
+        self.memsize = memsize
+        padding = memsize * 0.03
+        self.maxsize = memsize + padding
+        self.transfered = 0
+        self.widgets = [Percentage(), ' ', Bar(), ' ', ETA(), ' ',
+                        FileTransferSpeed()]
         self.sock_timeout = sock_timeout
-        self.logger       = logger
+        self.logger = logger
 
     def to_file(self, filename):
-        self.pbar = ProgressBar(widgets=self.widgets, maxval=self.maxsize).start()
+        self.pbar = ProgressBar(widgets=self.widgets,
+                                maxval=self.maxsize).start()
         self.pbar.start()
         pbar_update = True
 
@@ -39,11 +43,12 @@ class memory():
                     data = None
                     data_length = 0
                     try:
-                        #if pbar_update == True:
                         self.pbar.update(self.transfered)
                     except Exception as e:
-                        #pbar_update = False
-                        self.logger.info("{}: {} exceeds memsize {}".format(e, self.transfered, self.maxsize))
+                        self.logger.info("{}: {} exceeds memsize {}".format(
+                                         e,
+                                         self.transfered,
+                                         self.maxsize))
 
                 except (socket.timeout, socket.error) as e:
                     if isinstance(e, socket.timeout):
@@ -64,7 +69,8 @@ class memory():
         self.logger.info('Download complete: {}'.format(filename))
 
     def to_s3(self, key_id, secret_key, bucket, filename):
-        self.pbar = ProgressBar(widgets=self.widgets, maxval=self.maxsize).start()
+        self.pbar = ProgressBar(widgets=self.widgets,
+                                maxval=self.maxsize).start()
         self.pbar.start()
         pbar_update = True
 
@@ -87,11 +93,12 @@ class memory():
                     data = None
                     data_length = 0
                     try:
-                        if pbar_update == True:
-                            self.pbar.update(self.transfered)
+                        self.pbar.update(self.transfered)
                     except Exception as e:
-                        pbar_update = False
-                        self.logger.info("{}: {} exceeds memsize {}".format(e, self.transfered, self.maxval))
+                        self.logger.info("{}: {} exceeds memsize {}".format(
+                                         e,
+                                         self.transfered,
+                                         self.maxval))
                 except (socket.timeout, socket.error) as e:
                     if isinstance(e, socket.timeout):
                         break
@@ -115,4 +122,3 @@ class memory():
         self.outfile.close()
         self.pbar.update(self.maxsize)
         self.pbar.finish()
-
