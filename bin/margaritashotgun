@@ -1,4 +1,12 @@
 #!/usr/bin/env python
-from margaritashotgun.margaritashotgun import margaritashotgun
+import sys
+import os
+sys.path.append(os.getcwd())
+
+try:
+    from margaritashotgun.margaritashotgun import margaritashotgun
+except ImportError:
+    from margaritashotgun import margaritashotgun
+
 ms = margaritashotgun()
 ms.run()

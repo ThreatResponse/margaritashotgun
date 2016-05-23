@@ -2,9 +2,9 @@
 
 import argparse
 import yaml
-from server import server
-from tunnel import tunnel
-from memory import memory
+from . import server
+from . import tunnel
+from . import memory
 
 
 class cli():
@@ -13,7 +13,8 @@ class cli():
         self.logger = logger
 
     def parse_args(self):
-        parser = argparse.ArgumentParser(description='TODO description')
+        parser = argparse.ArgumentParser(
+            description='Remote memory aquisition wrapper for LiME')
         parser.add_argument('-P', '--port', help='ssh port on remote server')
         parser.add_argument('-u', '--username',
                             help='username for ssh connection')

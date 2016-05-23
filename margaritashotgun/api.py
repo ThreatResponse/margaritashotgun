@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from server import server
-from tunnel import tunnel
-from memory import memory
+from . import server
+from . import tunnel
+from . import memory
 
 
 class api():
@@ -45,7 +45,7 @@ class api():
         return port
 
     def establish_tunnel(self, host, port, auth):
-        tun = tunnel(host['addr'], port, host['username'], self.logger)
+        tun = tunnel.tunnel(host['addr'], port, host['username'], self.logger)
         if auth == 'encrypted_key_file':
             tun.connect_with_encrypted_keyfile(host['keyfile'],
                                                host['password'])
@@ -60,7 +60,7 @@ class api():
         return tun
 
     def establish_remote_session(self, host, port, auth):
-        rem = server(host['addr'], port, host['username'], self.logger)
+        rem = server.server(host['addr'], port, host['username'], self.logger)
         if auth == 'encrypted_key_file':
             rem.connect_with_encrypted_keyfile(host['keyfile'],
                                                host['password'])
@@ -90,7 +90,7 @@ class api():
         memsize = remote.get_mem_size()
 
         if lime_loaded:
-            mem = memory('127.0.0.1', tun_port, memsize, self.logger)
+            mem = memory.memory('127.0.0.1', tun_port, memsize, self.logger)
             try:
                 bucket = config['aws']['bucket']
                 key = config['aws']['key']

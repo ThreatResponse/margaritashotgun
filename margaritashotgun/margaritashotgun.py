@@ -3,8 +3,8 @@
 import sys
 import random
 import logging
-from cli import cli
-from api import api
+from . import cli
+from . import api
 
 
 class margaritashotgun():
@@ -30,8 +30,8 @@ class margaritashotgun():
 
     def run(self):
         try:
-            c = cli(self.logger)
-            a = api(self.logger)
+            c = cli.cli(self.logger)
+            a = api.api(self.logger)
             self.config = c.parse_args()
             self.remotes = []
             self.tunnels = []
