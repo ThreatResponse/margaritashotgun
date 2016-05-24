@@ -20,7 +20,7 @@ class margaritashotgun():
         self.logger.addHandler(streamhandler)
 
     def set_config(self, config):
-        a = api(logger=self.logger)
+        a = api.api(logger=self.logger)
         self.config = config
         if a.invalid_config(self.config):
             self.logger.info("config_verify_fail exiting")
