@@ -2,6 +2,7 @@
 
 from progressbar import ProgressBar, Percentage, Bar, ETA, FileTransferSpeed
 import errno
+import select
 import socket
 import s3fs
 
@@ -61,8 +62,7 @@ class memory():
                             self.cleanup()
                             raise
                     else:
-                        self.sock.close()
-                        self.outfile.close()
+                        self.cleanup()
                         raise
 
         self.cleanup()
@@ -99,7 +99,7 @@ class memory():
                                          e,
                                          self.transfered,
                                          self.maxval))
-                except (socket.timeout, socket.error) as e:
+                except (socket.timeout, socket.error, select.error) as e:
                     if isinstance(e, socket.timeout):
                         break
                     elif isinstance(e, socket.error):
@@ -109,9 +109,15 @@ class memory():
                         else:
                             self.cleanup()
                             raise
+                    elif isinstance(e, select.error):
+                        errorcode = e[0]
+                        if errorcode == errno.EINTR:
+                            pass
+                        else:
+                            self.cleanup()
+                            raise
                     else:
-                        self.sock.close()
-                        self.outfile.close()
+                        self.cleanup()
                         raise
 
         self.cleanup()
