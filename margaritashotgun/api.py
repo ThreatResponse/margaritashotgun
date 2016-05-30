@@ -3,6 +3,7 @@
 from . import server
 from . import tunnel
 from . import memory
+from exceptions.LimeError import LimeError
 
 
 class api():
@@ -75,7 +76,19 @@ class api():
         return rem
 
     def install_lime(self, host, remote, tun_port):
-        remote.upload_file(host['module'], 'lime.ko')
+        try:
+            module_path = host['module']
+            kernel_version = remote.get_kernel_version
+        except KeyError as e:
+            self.logger.info("no lime module defined for {}".format(
+                                host['addr']))
+            self.logger.info("attempting module lookup from repository")
+            module_path, kernel_version = remote.get_kernel_module()
+            if module_path is None:
+                # TODO: (joel) if interactive prompt user for filepath
+                raise LimeError("cannot resolve module for kernel {}".format(
+                          kernel_version))
+        remote.upload_file(module_path, 'lime.ko')
         cmd = 'sudo insmod ./lime.ko "path=tcp:{} format=lime"'.format(
               tun_port)
         remote.execute_async(cmd)

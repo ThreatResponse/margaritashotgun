@@ -38,12 +38,6 @@ class cli():
                                  arguments.keyfile))
                 quit()
 
-        if arguments.module:
-            if self.verify_file_path(arguments.module) is False:
-                self.logger.info("Invalid kernel module path: {0}".format(
-                                 arguments.module))
-                quit()
-
         if arguments.config is None:
             # TODO: (joel) check default location for creds
             # TODO  (joel) specify bucket + creds file + cred pair with flags
