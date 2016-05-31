@@ -35,17 +35,23 @@ class margaritashotgun():
         mp_config = []
 
         try:
-            workers = self.config['workers']
-        except KeyError:
-            self.logger.info("no worker count specified. defaulting to 1")
-            workers = 1
+            workers = int(self.config['workers'])
+        except Exception as e:
+            if type(e) == KeyError:
+                self.logger.info("no worker count specified. defaulting to 1")
+                workers = 1
+                pass
+            elif type(e) == ValueError:
+                if self.config['workers'] != 'auto':
+                    self.logger.info("invalid worker config, workers must be an integer or auto")
+                    raise ValueError('workers must be an integer or "auto"')
+                else:
+                    workers = self.config['workers']
+                    pass
+            else:
+                raise
 
         for host in self.config['hosts']:
-            if workers > 1:
-                draw_pbar = False
-            else:
-                draw_pbar = True
-
             try:
                 aws_config = self.config['aws']
             except KeyError:
@@ -53,11 +59,11 @@ class margaritashotgun():
 
             if aws_config:
                 conf = {'logger': self.logger.name, 'host': host,
-                        'aws': self.config['aws'], 'pbar': draw_pbar}
+                        'aws': aws_config}
             else:
-                conf = {'logger': self.logger.name, 'host': host,
-                        'pbar': draw_pbar}
+                conf = {'logger': self.logger.name, 'host': host}
             mp_config.append(conf)
+
         master = worker.master(self.logger, mp_config, workers)
         master.start_workers()
 

@@ -54,7 +54,9 @@ Additional Config examples are included in the conf directory
 
 ## Parallel Execution
 
-Memory can be captured in parallel however parallelism is limited by the number of workers configured.  Each worker is spawned as a new process to avoid problems with the GIL.  It is not recommended to configure more workers than there are cores on machine running margarita shotgun.
+Memory can be captured in parallel however parallelism is limited by the number of workers configured.  Each worker is spawned as a new process to avoid problems with the GIL.  It is not recommended to configure more workers than there are cores on machine running margarita shotgun.  
+
+To match the number of cpu's on the host set `workers: auto`
 
 ## Building
 

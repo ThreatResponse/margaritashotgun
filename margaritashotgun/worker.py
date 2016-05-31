@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import multiprocessing
 from multiprocessing import Pool
 import logging
 import random
@@ -9,7 +10,6 @@ from . import api
 
 def multi_run(config):
     logger = logging.getLogger(config['logger'])
-    c = cli.cli(logger)
     a = api.api(logger)
     remotes = []
     tunnels = []
@@ -49,7 +49,21 @@ class master():
     def __init__(self, logger, hosts, workers):
         self.logger = logger
         self.hosts = hosts
-        self.workers = workers
+        cpu_count = multiprocessing.cpu_count()
+        if workers == 'auto':
+            workers = cpu_count
+        if workers > len(self.hosts):
+            self.workers = len(self.hosts)
+        else:
+            self.workers = int(workers)
+
+        if self.workers > 1:
+            draw_pbar = False
+        else:
+            draw_pbar = True
+
+        for host in self.hosts:
+            host['pbar'] = draw_pbar
 
     def start_workers(self):
         pool = Pool(self.workers)
