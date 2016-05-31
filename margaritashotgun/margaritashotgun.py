@@ -64,8 +64,11 @@ class margaritashotgun():
                 conf = {'logger': self.logger.name, 'host': host}
             mp_config.append(conf)
 
-        master = worker.master(self.logger, mp_config, workers)
-        master.start_workers()
+        try:
+            master = worker.master(self.logger, mp_config, workers)
+            master.start_workers()
+        except KeyboardInterrupt:
+            sys.exit()
 
 if __name__ == "__main__":
     ms = margaritashotgun()
