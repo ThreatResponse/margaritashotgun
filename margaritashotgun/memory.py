@@ -90,10 +90,11 @@ class memory():
                                                             filename))
 
     def to_s3(self, key_id, secret_key, bucket, filename):
-        self.pbar = ProgressBar(widgets=self.widgets,
-                                maxval=self.maxsize).start()
-        self.pbar.start()
-        pbar_update = True
+        if self.draw_pbar:
+            self.pbar = ProgressBar(widgets=self.widgets,
+                                    maxval=self.maxsize).start()
+            self.pbar.start()
+            pbar_update = True
 
         s3 = s3fs.S3FileSystem(anon=False,
                                key=key_id,
