@@ -2,7 +2,7 @@
 
 ## Installing
 
-`pip install git+ssh://github.com/joelferrier/margaritashotgun.git@develop`
+`pip install git+ssh://github.com/ThreatResponse/python-margaritashotgun-private.git@develop`
 
 ## Usage
 
