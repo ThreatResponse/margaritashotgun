@@ -6,7 +6,7 @@
 
 ## Usage
 
-From the project root: `./bin/margarita-shotgun -h`
+From the project root: `./bin/margaritashotgun -h`
 
 
     usage: cli.py [-h] [-s SERVER] [-u USERNAME] [-p PASSWORD] [-k KEYFILE]
