@@ -18,6 +18,7 @@ class memory():
         self.memsize = memsize
         self.draw_pbar = draw_pbar
         padding = memsize * 0.03
+        self.update_threshold = 1024 * 1024 * 10
         self.maxsize = memsize + padding
         self.transfered = 0
         self.widgets = ['{} '.format(remote_host), Percentage(), ' ', Bar(),
@@ -59,6 +60,7 @@ class memory():
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.tunnel_host, self.tunnel_port))
             self.sock.settimeout(self.sock_timeout)
+            bytes_since_update = 0
             while True:
                 try:
                     data = self.sock.recv(self.recv_size)
@@ -67,9 +69,12 @@ class memory():
                         break
                     self.outfile.write(data)
                     self.transfered = self.transfered + data_length
+                    bytes_since_update = bytes_since_update + data_length
                     data = None
                     data_length = 0
-                    self.update_progress_bar()
+                    if bytes_since_update > self.update_threshold:
+                        self.update_progress_bar()
+                        bytes_since_update = 0
 
                 except (socket.timeout, socket.error) as e:
                     if isinstance(e, socket.timeout):
@@ -103,6 +108,7 @@ class memory():
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.tunnel_host, self.tunnel_port))
             self.sock.settimeout(self.sock_timeout)
+            bytes_since_update = 0
 
             while True:
                 try:
@@ -112,9 +118,14 @@ class memory():
                         break
                     self.outfile.write(data)
                     self.transfered = self.transfered + data_length
+                    bytes_since_update = bytes_since_update + data_length
                     data = None
                     data_length = 0
                     self.update_progress_bar()
+                    if bytes_since_update > self.update_threshold:
+                        self.update_progress_bar()
+                        bytes_since_update = 0
+
                 except (socket.timeout, socket.error, select.error) as e:
                     if isinstance(e, socket.timeout):
                         break
