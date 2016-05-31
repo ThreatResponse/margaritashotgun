@@ -47,7 +47,8 @@ class cli():
                                  'username': arguments.username,
                                  'password': arguments.password,
                                  'keyfile':  arguments.keyfile,
-                                 'module':   arguments.module}]}
+                                 'module':   arguments.module}],
+                      'workers': 1}
         else:
             try:
                 with open(arguments.config, 'r') as stream:

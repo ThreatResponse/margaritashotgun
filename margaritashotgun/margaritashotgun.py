@@ -5,6 +5,7 @@ import random
 import logging
 from . import cli
 from . import api
+from . import worker
 
 
 class margaritashotgun():
@@ -29,38 +30,36 @@ class margaritashotgun():
             return True
 
     def run(self):
+        c = cli.cli(self.logger)
+        self.config = c.parse_args()
+        mp_config = []
+
         try:
-            c = cli.cli(self.logger)
-            a = api.api(self.logger)
-            self.config = c.parse_args()
-            self.remotes = []
-            self.tunnels = []
-            if a.invalid_config(self.config):
-                self.logger.info("config_verify_fail exiting")
-                quit()
+            workers = self.config['workers']
+        except KeyError:
+            self.logger.info("no worker count specified. defaulting to 1")
+            workers = 1
 
-            for host in self.config['hosts']:
-                port = a.select_port(host)
-                auth = a.select_auth_method(host)
-                tun = a.establish_tunnel(host, port, auth)
-                self.tunnels.append(tun)
-                remote = a.establish_remote_session(host, port, auth)
-                self.remotes.append(remote)
-                if remote.test_conn() is False:
-                    self.logger.info("SSH connection failed ... exiting")
-                    quit()
-                tun_port = random.randint(32768, 61000)
-                a.install_lime(host, remote, tun_port)
-                a.dump_memory(self.config, host, tun, remote, tun_port)
-                a.cleanup_lime(remote)
+        for host in self.config['hosts']:
+            if workers > 1:
+                draw_pbar = False
+            else:
+                draw_pbar = True
 
-        except KeyboardInterrupt:
-            for tunnel in self.tunnels:
-                tunnel.cleanup()
-            for remote in self.remotes:
-                a.cleanup_lime(remote)
-                remote.cleanup()
-            sys.exit()
+            try:
+                aws_config = self.config['aws']
+            except KeyError:
+                aws_config = False
+
+            if aws_config:
+                conf = {'logger': self.logger.name, 'host': host,
+                        'aws': self.config['aws'], 'pbar': draw_pbar}
+            else:
+                conf = {'logger': self.logger.name, 'host': host,
+                        'pbar': draw_pbar}
+            mp_config.append(conf)
+        master = worker.master(self.logger, mp_config, workers)
+        master.start_workers()
 
 if __name__ == "__main__":
     ms = margaritashotgun()

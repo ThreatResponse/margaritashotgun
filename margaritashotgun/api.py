@@ -3,7 +3,7 @@
 from . import server
 from . import tunnel
 from . import memory
-from exceptions.LimeError import LimeError
+from .limeerror import limeerror as LimeError
 
 
 class api():
@@ -82,11 +82,13 @@ class api():
         except KeyError as e:
             self.logger.info("no lime module defined for {}".format(
                                 host['addr']))
-            self.logger.info("attempting module lookup from repository")
+            self.logger.info("{}: attempting module lookup from repo".format(
+                             host['addr']))
             module_path, kernel_version = remote.get_kernel_module()
             if module_path is None:
                 # TODO: (joel) if interactive prompt user for filepath
-                raise LimeError("cannot resolve module for kernel {}".format(
+                raise LimeError("{}: cannot find module for kernel {}".format(
+                          host['addr'],
                           kernel_version))
         remote.upload_file(module_path, 'lime.ko')
         cmd = 'sudo insmod ./lime.ko "path=tcp:{} format=lime"'.format(
@@ -97,13 +99,16 @@ class api():
         command = 'sudo rmmod lime.ko'
         remote.execute(command)
 
-    def dump_memory(self, config, host, tunnel, remote, tun_port):
+    def dump_memory(self, config, host, tunnel, remote, tun_port, draw_pbar):
         tunnel.start(tun_port, '127.0.0.1', tun_port)
         lime_loaded = remote.wait_for_lime(port=tun_port)
         memsize = remote.get_mem_size()
 
         if lime_loaded:
-            mem = memory.memory('127.0.0.1', tun_port, memsize, self.logger)
+            tun_host = '127.0.0.1'
+            remote_host = host['addr']
+            mem = memory.memory(tun_host, tun_port, remote_host, memsize,
+                                self.logger, draw_pbar)
             try:
                 bucket = config['aws']['bucket']
                 key = config['aws']['key']
@@ -130,6 +135,9 @@ class api():
                                                                   filename))
                 mem.to_file(filename)
         else:
-            self.logger.info("Lime failed to load ... exiting")
+            self.logger.info("{} Lime failed to load ... exiting".format(
+                             host['addr']))
+            return False
         remote.execute('sudo rmmod lime.ko')
         tunnel.cleanup()
+        return True

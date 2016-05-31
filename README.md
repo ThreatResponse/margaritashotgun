@@ -44,8 +44,17 @@ To upload to s3 use the following format:
           username: ec2-user
           keyfile:  access.pem
           module:   lime-4.1.19-24.31.amzn1.x86_64.ko
+    workers: 1
 
 To write to a local file exclude the aws section from configuration  
+  
+The `workers` configuration is an optional config item with the default configuration being a single worker.  More infomation about worker configuration is detailed in in the Parallel Execution section below.  
+  
+Additional Config examples are included in the conf directory  
+
+## Parallel Execution
+
+Memory can be captured in parallel however parallelism is limited by the number of workers configured.  Each worker is spawned as a new process to avoid problems with the GIL.  It is not recommended to configure more workers than there are cores on machine running margarita shotgun.
 
 ## Building
 

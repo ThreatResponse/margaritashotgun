@@ -23,3 +23,5 @@ var/
 notes
 tmp
 MANIFEST
+log/*
+!log/.keep

@@ -84,17 +84,24 @@ class Handler (socketserver.BaseRequestHandler):
                  chan.getpeername(),
                  (self.chain_host, self.chain_port)))
         while True:
-            r, w, x = select.select([self.request, chan], [], [])
-            if self.request in r:
-                data = self.request.recv(1024)
-                if len(data) == 0:
-                    break
-                chan.send(data)
-            if chan in r:
-                data = chan.recv(1024)
-                if len(data) == 0:
-                    break
-                self.request.send(data)
+            try:
+                r, w, x = select.select([self.request, chan], [], [])
+                if self.request in r:
+                    data = self.request.recv(1024)
+                    if len(data) == 0:
+                        break
+                    chan.send(data)
+                if chan in r:
+                    data = chan.recv(1024)
+                    if len(data) == 0:
+                        break
+                    self.request.send(data)
+            except socket.error as e:
+                errorcode = e[0]
+                if errorcode != errno.ECONNRESET:
+                    raise
+                else:
+                    pass
 
         try:
             peername = self.request.getpeername()

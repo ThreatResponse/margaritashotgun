@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+import datetime
 import paramiko
 import threading
 import time
 import requests
 import xmltodict
-from exceptions.LimeError import LimeError
+from .limeerror import limeerror as LimeError
 
 
 class server():
@@ -75,13 +76,14 @@ class server():
         else:
             url = "{}/{}/{}".format(self.s3_prefix, bucket_path, mod[1]['Key'])
             req = requests.get(url, stream=True)
-            filename = "lime_download_{}.ko".format(kernel_version)
+            datestamp = datetime.datetime.now().isoformat()
+            filename = "lime_download_{}_{}.ko".format(kernel_version, datestamp)
             self.logger.info("downloading {} as {}".format(url, filename))
             try:
                 with open(filename, 'w') as f:
                     for chunk in req.iter_content(chunk_size=4096):
                         if chunk:
-                            f.write(chunk)
+                            f.write(str(chunk))
             except IOError as e:
                 self.logger.info("Error fetching lime module: {}".format(str(e)))
                 raise
