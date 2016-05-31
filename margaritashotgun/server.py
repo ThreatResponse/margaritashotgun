@@ -77,7 +77,8 @@ class server():
             url = "{}/{}/{}".format(self.s3_prefix, bucket_path, mod[1]['Key'])
             req = requests.get(url, stream=True)
             datestamp = datetime.datetime.now().isoformat()
-            filename = "lime_download_{}_{}.ko".format(kernel_version, datestamp)
+            filename = "lime_download_{}_{}.ko".format(kernel_version,
+                                                       datestamp)
             self.logger.info("downloading {} as {}".format(url, filename))
             try:
                 with open(filename, 'w') as f:
@@ -85,11 +86,13 @@ class server():
                         if chunk:
                             f.write(str(chunk))
             except IOError as e:
-                self.logger.info("Error fetching lime module: {}".format(str(e)))
+                self.logger.info("Error fetching lime module: {}".format(
+                                 str(e)))
                 raise
 
             if self.verify_kernel_module(filename, url) is False:
-                raise LimeError('signature check failed for {}'.format(filename))
+                raise LimeError('signature check failed for {}'.format(
+                                filename))
             return (filename, kernel_version)
 
     def match_kernel_module(self, kernel_version):

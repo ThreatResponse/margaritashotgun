@@ -43,7 +43,8 @@ class margaritashotgun():
                 pass
             elif type(e) == ValueError:
                 if self.config['workers'] != 'auto':
-                    self.logger.info("invalid worker config, workers must be an integer or auto")
+                    self.logger.info("invalid worker config, " +
+                                     "workers must be an integer or auto")
                     raise ValueError('workers must be an integer or "auto"')
                 else:
                     workers = self.config['workers']
