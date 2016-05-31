@@ -29,9 +29,10 @@ class margaritashotgun():
         else:
             return True
 
-    def run(self):
+    def run(self, interactive=True):
         c = cli.cli(self.logger)
-        self.config = c.parse_args()
+        if interactive:
+            self.config = c.parse_args()
         mp_config = []
 
         try:
