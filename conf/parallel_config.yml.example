@@ -1,0 +1,26 @@
+aws:
+    bucket: memory_dump_example
+    key:    AKIAIOSFODNN7EXAMPLE
+    secret: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+hosts:
+    - addr:     52.36.191.XXX
+      port:     22
+      username: ec2-user
+      keyfile:  access.pem
+      module:   lime-4.1.19-24.31.amzn1.x86_64.ko
+    - addr:     52.36.170.XXX
+      port:     22
+      username: ec2-user
+      keyfile:  access.pem
+      module:   lime-4.1.19-24.31.amzn1.x86_64.ko
+    - addr:     52.36.210.XXX
+      port:     22
+      username: ubuntu
+      keyfile:  dev.pem
+      module:   lime-3.13.0-74-generic.ko
+    - addr:     52.36.90.XXX
+      port:     22
+      username: ubuntu
+      keyfile:  dev.pem
+      module:   lime-3.13.0-74-generic.ko
+workers: 2

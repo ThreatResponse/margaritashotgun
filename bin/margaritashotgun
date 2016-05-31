@@ -1,2 +1,12 @@
-#!/bin/bash
-python margaritashotgun/cli.py $@
+#!/usr/bin/env python
+import sys
+import os
+sys.path.append(os.getcwd())
+
+try:
+    from margaritashotgun.margaritashotgun import margaritashotgun
+except ImportError:
+    from margaritashotgun import margaritashotgun
+
+ms = margaritashotgun()
+ms.run()
