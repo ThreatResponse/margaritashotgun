@@ -1,0 +1,7 @@
+hosts:
+    - addr:     52.36.191.XXX
+      port:     22
+      username: ec2-user
+      keyfile:  access.pem
+      module:   lime-4.1.19-24.31.amzn1.x86_64.ko
+workers: 1
