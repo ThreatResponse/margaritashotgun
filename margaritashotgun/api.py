@@ -4,6 +4,8 @@ from . import server
 from . import tunnel
 from . import memory
 from .limeerror import limeerror as LimeError
+import boto3
+from botocore.exceptions import NoCredentialsError
 
 
 class api():
@@ -99,6 +101,22 @@ class api():
         command = 'sudo rmmod lime.ko'
         remote.execute(command)
 
+    def test_credentials(self, bucket=None):
+        self.logger.info('bucket configured but no credentials supplied')
+        self.logger.info('checking for aws credentials in environment')
+        if bucket is None:
+            return False
+        else:
+            client = boto3.client('s3')
+            try:
+                client.list_objects(Bucket=bucket)
+                self.logger.info('credentials found, proceeding')
+                return True
+            except NoCredentialsError as e:
+                self.logger.info('no credentials found, falling back to file download')
+                return False
+
+
     def dump_memory(self, config, host, tunnel, remote, tun_port, draw_pbar):
         tunnel.start(tun_port, '127.0.0.1', tun_port)
         lime_loaded = remote.wait_for_lime(port=tun_port)
@@ -113,15 +131,17 @@ class api():
                 bucket = config['aws']['bucket']
                 key = config['aws']['key']
                 secret = config['aws']['secret']
+                credentials_found = True
             except KeyError as e:
-                bucket = None
+                credentials_found = self.test_credentials(bucket)
                 key = None
                 secret = None
 
             filename = '{}-mem.lime'.format(host['addr'])
 
-            if bucket is not None and key is not None and secret is not None:
-                self.logger.info('{} dumping memory to s3://{}/{}'.format(
+            #if bucket is not None and key is not None and secret is not None:
+            if bucket is not None and credentials_found:
+                self.logger.info('{} dumping memory to s3:///{}/{}'.format(
                                  host['addr'],
                                  bucket,
                                  filename))
