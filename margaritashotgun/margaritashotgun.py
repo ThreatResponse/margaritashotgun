@@ -3,9 +3,9 @@
 import sys
 import random
 import logging
-from . import cli
-from . import utility
-from . import worker
+from .cli import cli
+from .utility import utility
+from .worker import master as multiprocessing_master
 
 
 class margaritashotgun():
@@ -25,7 +25,7 @@ class margaritashotgun():
             self.logger = logging.getLogger(logger_name)
 
     def set_config(self, config):
-        util = utility.utility(logger=self.logger)
+        util = utility(logger=self.logger)
         self.config = config
         if util.invalid_config(self.config):
             self.logger.info("config verification failed")
@@ -35,14 +35,14 @@ class margaritashotgun():
 
     def run(self):
         if self.interactive:
-            c = cli.cli(self.logger)
+            c = cli(self.logger)
             self.config = c.parse_args()
 
-        util = utility.utility(logger=self.logger)
+        util = utility(logger=self.logger)
         multi_config, workers = util.transform(self.config)
 
         try:
-            master = worker.master(self.logger, multi_config, workers)
+            master = multiprocessing_master(self.logger, multi_config, workers)
             master.start_workers()
         except KeyboardInterrupt:
             sys.exit()

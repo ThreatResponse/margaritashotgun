@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from . import server
-from . import tunnel
-from . import memory
+from .server import server
+from .tunnel import tunnel
+from .memory import memory
 from .limeerror import limeerror as LimeError
 import boto3
 from botocore.exceptions import NoCredentialsError
@@ -101,7 +101,7 @@ class utility():
         return port
 
     def establish_tunnel(self, host, port, auth):
-        tun = tunnel.tunnel(host['addr'], port, host['username'], self.logger)
+        tun = tunnel(host['addr'], port, host['username'], self.logger)
         if auth == 'encrypted_key_file':
             tun.connect_with_encrypted_keyfile(host['keyfile'],
                                                host['password'])
@@ -116,7 +116,7 @@ class utility():
         return tun
 
     def establish_remote_session(self, host, port, auth):
-        rem = server.server(host['addr'], port, host['username'], self.logger)
+        rem = server(host['addr'], port, host['username'], self.logger)
         if auth == 'encrypted_key_file':
             rem.connect_with_encrypted_keyfile(host['keyfile'],
                                                host['password'])
@@ -178,7 +178,7 @@ class utility():
         if lime_loaded:
             tun_host = '127.0.0.1'
             remote_host = host['addr']
-            mem = memory.memory(tun_host, tun_port, remote_host, memsize,
+            mem = memory(tun_host, tun_port, remote_host, memsize,
                                 self.logger, draw_pbar)
             try:
                 bucket = config['aws']['bucket']

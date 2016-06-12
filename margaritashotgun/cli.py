@@ -2,9 +2,6 @@
 
 import argparse
 import yaml
-from . import server
-from . import tunnel
-from . import memory
 
 
 class cli():
