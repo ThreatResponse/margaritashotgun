@@ -6,10 +6,19 @@ import logging
 import random
 from . import cli
 from . import api
+from . import multilogger
 
 
 def multi_run(config):
-    logger = logging.getLogger(config['logger'])
+    log_dir = config['logging']['dir']
+    if log_dir[-1:] != '/' and log_dir != '':
+        log_dir = log_dir + "/"
+
+    logfile = "{}{}-json.log".format(log_dir, config['host']['addr'])
+    desc = "{} action".format(config['logging']['logger'])
+    logger = multilogger.multilogger(config['logging']['logger'], logfile,
+                                     desc=desc)
+
     a = api.api(logger)
     remotes = []
     tunnels = []

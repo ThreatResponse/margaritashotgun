@@ -10,17 +10,21 @@ from . import worker
 
 class margaritashotgun():
 
-    def __init__(self):
-        self.logger = logging.getLogger('margarita_shotgun')
-        streamhandler = logging.StreamHandler(sys.stdout)
-        self.logger.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        streamhandler.setFormatter(formatter)
-        self.logger.addHandler(streamhandler)
+    def __init__(self, interactive=True, logger_name=None):
+        self.interactive=interactive
+        if logger_name is None:
+            self.logger = logging.getLogger('margarita_shotgun')
+            streamhandler = logging.StreamHandler(sys.stdout)
+            self.logger.setLevel(logging.INFO)
+            formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            )
+            streamhandler.setFormatter(formatter)
+            self.logger.addHandler(streamhandler)
+        else:
+            self.logger = logging.getLogger(logger_name)
 
-    def set_config(self, config):
+    def set_config(self, config, logger):
         a = api.api(logger=self.logger)
         self.config = config
         if a.invalid_config(self.config):
@@ -29,9 +33,9 @@ class margaritashotgun():
         else:
             return True
 
-    def run(self, interactive=True):
+    def run(self):
         c = cli.cli(self.logger)
-        if interactive:
+        if self.interactive:
             self.config = c.parse_args()
         mp_config = []
 
@@ -53,6 +57,13 @@ class margaritashotgun():
             else:
                 raise
 
+        try:
+            log_dir = self.config['logging']['dir']
+            to_s3 = self.config['logging']['to-s3']
+        except KeyError:
+            log_dir = ''
+            to_s3 = False
+
         for host in self.config['hosts']:
             try:
                 aws_config = self.config['aws']
@@ -60,10 +71,14 @@ class margaritashotgun():
                 aws_config = False
 
             if aws_config:
-                conf = {'logger': self.logger.name, 'host': host,
+                conf = {'host': host,
                         'aws': aws_config}
             else:
-                conf = {'logger': self.logger.name, 'host': host}
+                conf = {'host': host}
+
+            conf['logging'] = {'logger': self.logger.name,
+                               'dir': log_dir,
+                               'to_s3': to_s3 }
             mp_config.append(conf)
 
         try:
