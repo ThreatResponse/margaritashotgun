@@ -47,7 +47,7 @@ To upload to s3 use the following format:
     workers: 1
     logging:
         dir: 'logs/'
-        to-s3: False
+        prefix: <case-number>
 
 To write to a local file exclude the aws section from configuration  
   

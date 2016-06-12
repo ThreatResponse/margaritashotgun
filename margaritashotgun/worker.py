@@ -11,10 +11,15 @@ from . import multilogger
 
 def multi_run(config):
     log_dir = config['logging']['dir']
+    log_prefix = config['logging']['prefix']
     if log_dir[-1:] != '/' and log_dir != '':
         log_dir = log_dir + "/"
 
-    logfile = "{}{}-json.log".format(log_dir, config['host']['addr'])
+    if log_prefix[-1:] != '-' and log_prefix != '':
+        log_prefix = log_prefix + "-"
+
+    logfile = "{}{}{}-memcapture-json.log".format(log_dir, log_prefix,
+                                       config['host']['addr'])
     desc = "{} action".format(config['logging']['logger'])
     logger = multilogger.multilogger(config['logging']['logger'], logfile,
                                      desc=desc)

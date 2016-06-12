@@ -59,10 +59,10 @@ class margaritashotgun():
 
         try:
             log_dir = self.config['logging']['dir']
-            to_s3 = self.config['logging']['to-s3']
+            log_prefix = self.config['logging']['prefix']
         except KeyError:
             log_dir = ''
-            to_s3 = False
+            log_prefix = ''
 
         for host in self.config['hosts']:
             try:
@@ -78,7 +78,7 @@ class margaritashotgun():
 
             conf['logging'] = {'logger': self.logger.name,
                                'dir': log_dir,
-                               'to_s3': to_s3 }
+                               'prefix': log_prefix}
             mp_config.append(conf)
 
         try:
