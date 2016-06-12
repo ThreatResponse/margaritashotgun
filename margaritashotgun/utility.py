@@ -8,7 +8,7 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 
 
-class api():
+class utility():
 
     def __init__(self, logger):
         self.logger = logger

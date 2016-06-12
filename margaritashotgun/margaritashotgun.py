@@ -4,7 +4,7 @@ import sys
 import random
 import logging
 from . import cli
-from . import api
+from . import utility
 from . import worker
 
 
@@ -25,10 +25,10 @@ class margaritashotgun():
             self.logger = logging.getLogger(logger_name)
 
     def set_config(self, config):
-        a = api.api(logger=self.logger)
+        util = utility.utility(logger=self.logger)
         self.config = config
-        if a.invalid_config(self.config):
-            self.logger.info("config_verify_fail exiting")
+        if util.invalid_config(self.config):
+            self.logger.info("config verification failed")
             return False
         else:
             return True

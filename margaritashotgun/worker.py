@@ -4,8 +4,7 @@ import multiprocessing
 from multiprocessing import Pool
 import logging
 import random
-from . import cli
-from . import api
+from . import utility
 from . import multilogger
 
 
@@ -24,36 +23,36 @@ def multi_run(config):
     logger = multilogger.multilogger(config['logging']['logger'], logfile,
                                      desc=desc)
 
-    a = api.api(logger)
+    util = utility.utility(logger)
     remotes = []
     tunnels = []
     try:
-        if a.invalid_config(config):
+        if util.invalid_config(config):
             logger.info("config_verify_fail exiting")
             return False
 
         host = config['host']
-        port = a.select_port(host)
-        auth = a.select_auth_method(host)
-        tun = a.establish_tunnel(host, port, auth)
+        port = util.select_port(host)
+        auth = util.select_auth_method(host)
+        tun = util.establish_tunnel(host, port, auth)
         tunnels.append(tun)
-        remote = a.establish_remote_session(host, port, auth)
+        remote = util.establish_remote_session(host, port, auth)
         remotes.append(remote)
         if remote.test_conn() is False:
             logger.info("SSH connection failed ... exiting")
             return False
         tun_port = random.randint(32768, 61000)
-        a.install_lime(host, remote, tun_port)
+        util.install_lime(host, remote, tun_port)
         draw_pbar = config['pbar']
-        a.dump_memory(config, host, tun, remote, tun_port, draw_pbar)
-        a.cleanup_lime(remote)
+        util.dump_memory(config, host, tun, remote, tun_port, draw_pbar)
+        util.cleanup_lime(remote)
         return True
 
     except KeyboardInterrupt:
         for tunnel in tunnels:
             tunnel.cleanup()
         for remote in remotes:
-            a.cleanup_lime(remote)
+            util.cleanup_lime(remote)
             remote.cleanup()
             sys.exit()
 
