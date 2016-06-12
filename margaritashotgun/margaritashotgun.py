@@ -42,7 +42,8 @@ class margaritashotgun():
         multi_config, workers = util.transform(self.config)
 
         try:
-            master = multiprocessing_master(self.logger, multi_config, workers)
+            master = multiprocessing_master(self.logger, multi_config, workers,
+                                            interactive=self.interactive)
             master.start_workers()
         except KeyboardInterrupt:
             sys.exit()

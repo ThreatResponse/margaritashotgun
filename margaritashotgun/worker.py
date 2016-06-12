@@ -59,7 +59,7 @@ def multi_run(config):
 
 class master():
 
-    def __init__(self, logger, hosts, workers):
+    def __init__(self, logger, hosts, workers, interactive):
         self.logger = logger
         self.hosts = hosts
         cpu_count = multiprocessing.cpu_count()
@@ -70,7 +70,7 @@ class master():
         else:
             self.workers = int(workers)
 
-        if self.workers > 1:
+        if self.workers > 1 or not interactive:
             draw_pbar = False
         else:
             draw_pbar = True
