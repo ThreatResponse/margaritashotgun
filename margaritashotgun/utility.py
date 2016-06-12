@@ -17,6 +17,59 @@ class utility():
     def invalid_config(self, config):
         return False
 
+    def transform(self, config):
+        multi_config = []
+        workers = self.get_worker_count(config)
+        log_dir, log_prefix = self.get_log_vars(config)
+
+        for host in config['hosts']:
+            try:
+                aws_config = config['aws']
+            except KeyError:
+                aws_config = False
+
+            if aws_config:
+                conf = {'host': host,
+                        'aws': aws_config}
+            else:
+                conf = {'host': host}
+
+            conf['logging'] = {'logger': self.logger.name,
+                               'dir': log_dir,
+                               'prefix': log_prefix}
+            multi_config.append(conf)
+
+        return multi_config, workers
+
+    def get_log_vars(self, config):
+        try:
+            log_dir = config['logging']['dir']
+            log_prefix = config['logging']['prefix']
+        except KeyError:
+            log_dir = ''
+            log_prefix = ''
+        return log_dir, log_prefix
+
+    def get_worker_count(self, config):
+        try:
+            workers = int(config['workers'])
+        except Exception as e:
+            if type(e) == KeyError:
+                self.logger.info("no worker count specified. defaulting to 1")
+                workers = 1
+                pass
+            elif type(e) == ValueError:
+                if config['workers'] != 'auto':
+                    self.logger.info("invalid worker config, " +
+                                     "workers must be an integer or auto")
+                    raise ValueError('workers must be an integer or "auto"')
+                else:
+                    workers = config['workers']
+                    pass
+            else:
+                raise
+            return workers
+
     def port_specified(self, host):
         try:
             if host['Port'] is None:

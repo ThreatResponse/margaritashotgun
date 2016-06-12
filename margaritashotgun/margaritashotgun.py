@@ -34,55 +34,15 @@ class margaritashotgun():
             return True
 
     def run(self):
-        c = cli.cli(self.logger)
         if self.interactive:
+            c = cli.cli(self.logger)
             self.config = c.parse_args()
-        mp_config = []
+
+        util = utility.utility(logger=self.logger)
+        multi_config, workers = util.transform(self.config)
 
         try:
-            workers = int(self.config['workers'])
-        except Exception as e:
-            if type(e) == KeyError:
-                self.logger.info("no worker count specified. defaulting to 1")
-                workers = 1
-                pass
-            elif type(e) == ValueError:
-                if self.config['workers'] != 'auto':
-                    self.logger.info("invalid worker config, " +
-                                     "workers must be an integer or auto")
-                    raise ValueError('workers must be an integer or "auto"')
-                else:
-                    workers = self.config['workers']
-                    pass
-            else:
-                raise
-
-        try:
-            log_dir = self.config['logging']['dir']
-            log_prefix = self.config['logging']['prefix']
-        except KeyError:
-            log_dir = ''
-            log_prefix = ''
-
-        for host in self.config['hosts']:
-            try:
-                aws_config = self.config['aws']
-            except KeyError:
-                aws_config = False
-
-            if aws_config:
-                conf = {'host': host,
-                        'aws': aws_config}
-            else:
-                conf = {'host': host}
-
-            conf['logging'] = {'logger': self.logger.name,
-                               'dir': log_dir,
-                               'prefix': log_prefix}
-            mp_config.append(conf)
-
-        try:
-            master = worker.master(self.logger, mp_config, workers)
+            master = worker.master(self.logger, multi_config, workers)
             master.start_workers()
         except KeyboardInterrupt:
             sys.exit()
