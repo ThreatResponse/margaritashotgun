@@ -24,7 +24,7 @@ class margaritashotgun():
         else:
             self.logger = logging.getLogger(logger_name)
 
-    def set_config(self, config, logger):
+    def set_config(self, config):
         a = api.api(logger=self.logger)
         self.config = config
         if a.invalid_config(self.config):
