@@ -25,3 +25,5 @@ tmp
 MANIFEST
 log/*
 !log/.keep
+.cache
+.coverage
