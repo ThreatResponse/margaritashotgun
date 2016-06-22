@@ -75,6 +75,10 @@ TODO
 
 Install with `pip install dist/margarita_shotgun-0.1.0.tar.gz`  
 
+## Tests
+
+    py.test --cov=margaritashotgun
+
 ## License
 
 The MIT License (MIT)
