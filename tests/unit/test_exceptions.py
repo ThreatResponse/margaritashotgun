@@ -38,3 +38,6 @@ def test_lime_retries_exceeded_error():
     with pytest.raises(LimeRetriesExceededError):
         raise LimeRetriesExceededError(20)
 
+def test_memory_capture_output_missing_error():
+    with pytest.raises(MemoryCaptureOutputMissingError):
+        raise MemoryCaptureOutputMissingError('app01.example.com')

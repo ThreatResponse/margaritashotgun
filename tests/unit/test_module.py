@@ -12,6 +12,12 @@ def test_set_stream_handler():
     assert logger.name == name
     assert logger.level == level
 
+    name = 'defaults'
+    margaritashotgun.set_stream_logger(name)
+    logger = logging.getLogger(name)
+    assert logger.name == name
+    assert logger.level == logging.INFO
+
 def test_create_client():
     with pytest.raises(NoConfigurationError):
         margaritashotgun.client()

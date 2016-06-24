@@ -14,6 +14,12 @@ def test_args_config_file():
     arguments = cli.parse_args(args)
     assert arguments.config == "config_file.yml"
 
+def test_configure():
+    cli = Cli()
+    config = cli.load_config('tests/files/validate_failing_aws.yml')
+    with pytest.raises(InvalidConfigurationError):
+        cli.configure(config=config)
+
 def test_args_server():
     cli = Cli()
     args = ["--server", "app.example.com"]
@@ -60,6 +66,22 @@ def test_args_optional():
     assert arguments.output_dir == "dump"
     assert arguments.log_dir == "logs"
     assert arguments.log_prefix == "case_num"
+
+def test_configure_args():
+    cli = Cli()
+    args = ["-c", "tests/files/validate_passing.yml"]
+    arguments = cli.parse_args(args)
+    cli.configure_args(arguments)
+
+    args = ["-c", "tests/files/yml_failing.yml"]
+    arguments = cli.parse_args(args)
+    with pytest.raises(YAMLError):
+        cli.configure_args(arguments)
+
+    args = ["-c", "tests/files/validate_failing_aws.yml"]
+    arguments = cli.parse_args(args)
+    with pytest.raises(InvalidConfigurationError):
+        cli.configure_args(arguments)
 
 def test_check_file_paths():
     cli = Cli()
