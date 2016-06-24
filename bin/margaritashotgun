@@ -5,6 +5,7 @@ import os
 sys.path.append(os.getcwd())
 
 import margaritashotgun
+import logging
 
 margaritashotgun.set_stream_logger()
 client = margaritashotgun.client(library=False)

@@ -1,17 +1,13 @@
-from enum import Enum
-#import threading
 import paramiko
 from paramiko import AuthenticationException, SSHException
+from enum import Enum
+from concurrent.futures import ThreadPoolExecutor
 from socket import error as SocketError
-from margaritashotgun.exceptions import AuthenticationMethodMissingError
-from margaritashotgun.exceptions import SSHConnectionError
 from margaritashotgun.auth import AuthMethods
+from margaritashotgun.exceptions import *
+import logging
 
-# TODO: remove unused imports
-#import datetime
-#import time
-#import requests
-#import xmltodict
+logger = logging.getLogger(__name__)
 
 
 class Commands(Enum):
@@ -19,92 +15,159 @@ class Commands(Enum):
     kernel_version = "uname -r"
     lime_pattern = "{0}:{1}"
     lime_check = "netstat -lnt | grep {0}"
+    load_lime = 'sudo insmod {0} "path=tcp:{1}" format={2}'
+    unload_lime = "sudo pkill insmod; sudo rmmod lime"
+
 
 class RemoteShell():
-    """
-    """
 
-    def __init__(self):
+    def __init__(self, max_async_threads=2):
         """
+        :type args: int
+        :param args: maximun number of async command executors
         """
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.s3_prefix = "https://s3.amazonaws.com"
-        #self.logger = logger
+        self.executor = ThreadPoolExecutor(max_workers=max_async_threads)
+        self.futures = []
 
-    def connect(self, auth, address, port=22):
+    def connect(self, auth, address, port):
         """
+        Creates an ssh session to a remote host
+
+        :type auth: :py:class:`margaritashotgun.auth.AuthMethods`
+        :param auth: Authentication object
+        :type address: str
+        :param address: remote server address
+        :type port: int
+        :param port: remote server port
         """
+        self.username = auth.username
+        self.address = address
+        self.port = port
         try:
+            logger.debug(("{0}: paramiko client connecting to "
+                          "{0}:{1} with {2}".format(address,
+                                                    port,
+                                                    auth.method)))
             if auth.method == AuthMethods.key:
-                self.connect_with_key(auth.username, auth.key)
-            if auth.method == AuthMethods.password:
-                self.connect_with_password(auth.username, auth.password)
+                self.connect_with_key(auth.username, auth.key, address, port)
+            elif auth.method == AuthMethods.password:
+                self.connect_with_password(auth.username, auth.password,
+                                           address, port)
             else:
                 raise AuthenticationMethodMissingError()
+            logger.debug(("{0}: paramiko client connected to "
+                          "{0}:{1}".format(address, port)))
         except (AuthenticationException, SSHException, SocketError) as ex:
-            raise SSHConnectionError("{}:{}".format(address, port), ex)
-
-
-        port = opts['port']
-        username = opts['username']
-        password = opts['password']
-        print("todo")
+            raise SSHConnectionError("{0}:{1}".format(address, port), ex)
 
 
     def connect_with_password(self, username, password, address, port):
         """
+        Create an ssh session to a remote host with a username and password
+
+        :type username: str
+        :param username: username used for ssh authentication
+        :type password: str
+        :param password: password used for ssh authentication
+        :type address: str
+        :param address: remote server address
+        :type port: int
+        :param port: remote server port
         """
         self.ssh.connect(username=username,
                          password=password,
                          hostname=address,
                          port=port)
 
-    def connect_with_key(self, private_key_path):
+    def connect_with_key(self, username, key, address, port):
         """
+        Create an ssh session to a remote host with a username and rsa key
+
+        :type username: str
+        :param username: username used for ssh authentication
+        :type key: :py:class:`paramiko.key.RSAKey`
+        :param key: paramiko rsa key used for ssh authentication
+        :type address: str
+        :param address: remote server address
+        :type port: int
+        :param port: remote server port
         """
-        key = paramiko.RSAKey.from_private_key_file(private_key_path)
-        self.ssh.connect(hostname=self.address,
-                         port=self.port,
-                         username=self.username,
+        self.ssh.connect(hostname=address,
+                         port=port,
+                         username=username,
                          pkey=key)
 
     def execute(self, command):
+        """
+        Executes command on remote hosts
+
+        :type command: str
+        :param command: command to be run on remote host
+        """
+        logger.debug('{0}: executing "{1}"'.format(self.address, command))
         stdin, stdout, stderr = self.ssh.exec_command(command)
         return dict(zip(['stdin', 'stdout', 'stderr'],
                         [stdin, stdout, stderr]))
 
-    # TODO: upload file method
+    def execute_async(self, command, callback=None):
+        """
+        Executes command on remote hosts without blocking
+
+        :type command: str
+        :param command: command to be run on remote host
+        :type callback: function
+        :param callback: function to call when execution completes
+        """
+        logger.debug(('{0}: execute async "{1}"'
+                      'with callback {2}'.format(self.address, command,
+                                                 callback)))
+        future = self.executor.submit(self.execute, command)
+        if callback is not None:
+            future.add_done_callback(callback)
+        return future
+
+    def decode(self, stream, encoding='utf-8'):
+        """
+        Convert paramiko stream into a string
+
+        :type stream:
+        :param stream: stream to convert
+        :type encoding: str
+        :param encoding: stream encoding
+        """
+        data = stream.read().decode(encoding).strip("\n")
+        if data != "":
+            logger.debug(('{0}: decoded "{1}" with encoding '
+                          '{2}'.format(self.address, data, encoding)))
+        return data
+
     def upload_file(self, local_path, remote_path):
+        """
+        Upload a file from the local filesystem to the remote host
+
+        :type local_path: str
+        :param local_path: path of local file to upload
+        :type remote_path: str
+        :param remote_path: destination path of upload on remote host
+        """
+        logger.debug("{0}: uploading {1} to {0}:{2}".format(self.address,
+                                                            local_path,
+                                                            remote_path))
         try:
             sftp = self.ssh.open_sftp()
             sftp.put(local_path, remote_path)
             sftp.close()
-        # TODO: handle specific exceptions
-        except Exception as ex:
-            print(ex)
+        except SSHException as ex:
+            logger.WARN(("{0}: LiME module upload failed with exception:"
+                         "{1}".format(self.address, ex)))
 
-    def __del__(self):
+    def cleanup(self):
+        """
+        Release resources used during shell execution
+        """
+        for future in self.futures:
+            future.cancel()
+        self.executor.shutdown(wait=10)
         self.ssh.close()
-
-
-#    def execute_async(self, command):
-#        worker = async_worker(command, self.ssh)
-#        worker.start()
-
-#    def cleanup(self):
-#        self.ssh.close()
-
-#    def __exit__(self, exc_type, exc_value, traceback):
-#        self.ssh.close()
-
-
-#class async_worker(threading.Thread):
-#
-#    def __init__(self, command, ssh):
-#        super(async_worker, self).__init__()
-#        self.command = command
-#        self.ssh = ssh
-#
-#    def run(self):
-#        stdin, stdout, stderr = self.ssh.exec_command(self.command, timeout=60)

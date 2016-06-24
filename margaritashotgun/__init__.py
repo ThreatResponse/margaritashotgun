@@ -1,5 +1,4 @@
 import logging
-
 from margaritashotgun.client import Client
 
 __author__ = 'Joel Ferrier'
@@ -32,7 +31,6 @@ def set_stream_logger(name='margaritashotgun', level=logging.INFO,
     formatter = logging.Formatter(format_string)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-
 
 def client(*args, **kwargs):
     """

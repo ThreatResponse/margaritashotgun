@@ -6,7 +6,7 @@ class InvalidConfigurationError(MargaritaShotgunError):
     """
     Raised when an unsupported configuration option is supplied
     """
-    def __init__(self, key, value, reason='unsupported'):
+    def __init__(self, key, value, reason='unsupported configuration'):
         msg = "Invalid Configuration \"{}: {}\" {}".format(key, value, reason)
         MargaritaShotgunError.__init__(self, msg)
 
@@ -69,4 +69,22 @@ class LimeRetriesExceededError(MargaritaShotgunError):
         msg = (
             "Max retries exceeded waiting for LiME: {}".format(retries)
         )
+        MargaritaShotgunError.__init__(self, msg)
+
+class MemoryCaptureAttributeMissingError(MargaritaShotgunError):
+    """
+    Raised when memory capture is missing a required attribute
+    """
+
+    def __init__(self, attribute):
+        msg = "Memory capture missing attribute: {}".format(attribute)
+        MargaritaShotgunError.__init__(self, msg)
+
+class MemoryCaptureOutputMissingError(MargaritaShotgunError):
+    """
+    Raised when no output is configured when capturing memory
+    """
+
+    def __init__(self, remote_host):
+        msg = "No output configured for mem capture on {}".format(remote_host)
         MargaritaShotgunError.__init__(self, msg)

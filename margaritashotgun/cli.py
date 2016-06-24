@@ -8,17 +8,19 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-_default_allowed_keys = ["aws", "hosts", "workers", "logging"]
-_aws_allowed_keys = ["bucket"]
-_host_allowed_keys = ["addr", "port", "username", "password",
-                      "module", "key", "filename"]
-_logging_allowed_keys = ["log_dir", "prefix"]
-_default_config = {"aws": {"bucket": None},
-                   "hosts": {},
-                   "workers": "auto",
-                   "logging": {
-                       "dir": None,
-                       "prefix": None}}
+default_allowed_keys = ["aws", "hosts", "workers", "logging"]
+aws_allowed_keys = ["bucket"]
+host_allowed_keys = ["addr", "port", "username", "password",
+                     "module", "key", "filename"]
+logging_allowed_keys = ["log_dir", "prefix"]
+default_host_config = dict(zip(host_allowed_keys,
+                               [None]*len(host_allowed_keys)))
+default_config = {"aws": {"bucket": None},
+                  "hosts": {},
+                  "workers": "auto",
+                  "logging": {
+                      "dir": None,
+                      "prefix": None}}
 
 
 class Cli():
@@ -83,20 +85,33 @@ class Cli():
         """
 
         if arguments is not None:
-            _args_config = self.configure_args(arguments)
-            _default_config.update(_args_config)
+            args_config = self.configure_args(arguments)
+            default_config.update(args_config)
         if config is not None:
             try:
                 self.validate_config(config)
             except InvalidConfigurationError as ex:
                 logger.warn(ex)
-                quit(1)
-            _default_config.update(config)
+                raise
+            default_config.update(config)
 
-        return _default_config
+        # ensure each host is populated with all keys
+        hosts = []
+        for host in default_config['hosts']:
+            for key in host_allowed_keys:
+                if key not in host:
+                    host[key] = None
+            hosts.append(host)
+        default_config['hosts'] = hosts
+
+        return default_config
 
     def configure_args(self, arguments):
         """
+        Create configuration has from command line arguments
+
+        :type arguments: :py:class:`argparse.Namespace`
+        :params arguments: arguments produced by :py:meth:`Cli.parse_args()`
         """
 
         module, key, config_path = self.check_file_paths(arguments.module,
@@ -105,32 +120,32 @@ class Cli():
         output_dir, log_dir = self.check_directory_paths(arguments.output_dir,
                                                          arguments.log_dir)
 
-        _args_config = dict(aws=dict(bucket=arguments.bucket),
-                            logging=dict(log_dir=arguments.log_dir,
-                                         prefix=arguments.log_prefix),
-                            workers=arguments.workers)
+        args_config = dict(aws=dict(bucket=arguments.bucket),
+                           logging=dict(log_dir=arguments.log_dir,
+                                        prefix=arguments.log_prefix),
+                           workers=arguments.workers)
 
         if arguments.server is not None:
-            host = dict(zip(_host_allowed_keys,
+            host = dict(zip(host_allowed_keys,
                             [arguments.server, arguments.port,
                              arguments.username, arguments.password,
                              module, key, arguments.filename]))
 
-            _args_config['hosts'] = list(host)
+            args_config['hosts'] = list(host)
 
         if config_path is not None:
             try:
-                _config = self.load_config(config_path)
-                self.validate_config(_config)
-                _args_config.update(_config)
+                config = self.load_config(config_path)
+                self.validate_config(config)
+                args_config.update(config)
             except YAMLError as ex:
                 logger.warn('Invalid yaml Format: {0}'.format(ex))
-                quit(1)
+                raise
             except InvalidConfigurationError as ex:
                 logger.warn(ex)
-                quit(1)
+                raise
 
-        return _args_config
+        return args_config
 
     def check_file_paths(self, *args):
         """
@@ -143,7 +158,7 @@ class Cli():
                     self.check_file_path(path)
                 except OSError as ex:
                     logger.warn(ex)
-                    quit(1)
+                    raise
         return args
 
     def check_file_path(self, path):
@@ -168,7 +183,7 @@ class Cli():
                     self.check_directory_path(path)
                 except OSError as ex:
                     logger.warn(ex)
-                    quit(1)
+                    raise
         return args
 
     def check_directory_path(self, path):
@@ -200,22 +215,36 @@ class Cli():
         :param config: configuration dictionary
         """
 
+        try:
+            hosts = config['hosts']
+        except KeyError:
+            raise InvalidConfigurationError('hosts', "",
+                                            reason=('hosts configuration section'
+                                                    'is required'))
+
         for key in config.keys():
-            if key not in _default_allowed_keys:
+            if key not in default_allowed_keys:
                 raise InvalidConfigurationError(key, config[key])
 
         bucket = False
-        for key in config['aws'].keys():
-            if key == 'bucket' and config['aws'][key] is not None:
-                bucket = True
-            if key not in _aws_allowed_keys:
-                raise InvalidConfigurationError(key, config['aws'][key])
+        # optional configuration
+        try:
+            for key in config['aws'].keys():
+                if key == 'bucket' and config['aws'][key] is not None:
+                    bucket = True
+                if key not in aws_allowed_keys:
+                    raise InvalidConfigurationError(key, config['aws'][key])
+        except KeyError:
+            pass
 
-        for key in config['logging'].keys():
-            if key not in _logging_allowed_keys:
-                raise InvalidConfigurationError(key, config['logging'][key])
+        # optional configuration
+        try:
+            for key in config['logging'].keys():
+                if key not in logging_allowed_keys:
+                    raise InvalidConfigurationError(key, config['logging'][key])
+        except KeyError:
+            pass
 
-        # Ensure hosts is a list
         if type(config['hosts']) is not list:
             raise InvalidConfigurationError('hosts', config['hosts'],
                                             reason="hosts must be a list")
@@ -224,10 +253,9 @@ class Cli():
             for key in host.keys():
                 if key == 'filename' and host['filename'] is not None:
                     filename = True
-                if key not in _host_allowed_keys:
+                if key not in host_allowed_keys:
                     raise InvalidConfigurationError(key, host[key])
 
-        # Ensure filename and bucket are not both configured
         if bucket and filename:
             raise InvalidConfigurationError('bucket', config['aws']['bucket'],
                                             reason=('bucket configuration is'

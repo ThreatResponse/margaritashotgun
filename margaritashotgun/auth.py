@@ -10,11 +10,16 @@ class AuthMethods(Enum):
     password = 'password'
 
 class Auth():
-    """
-    """
 
     def __init__(self, username=None, password=None, key=None):
-
+        """
+        :type username: str
+        :param username: username for ssh authentication
+        :type password: str
+        :param password: password for ssh authentication
+        :type key: str
+        :param key: path to rsa key for ssh authentication
+        """
         self.method = None
         self.username = None
         self.password = None
@@ -36,7 +41,14 @@ class Auth():
 
     def load_key(self, key_path, password):
         """
+        Creates paramiko rsa key
+
+        :type key_path: str
+        :param key_path: path to rsa key
+        :type password: str
+        :param password: password to try if rsa key is encrypted
         """
+
         try:
             return paramiko.RSAKey.from_private_key_file(key_path)
         except PasswordRequiredException as ex:

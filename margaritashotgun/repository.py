@@ -1,3 +1,6 @@
+import datetime
+import requests
+import xmltodict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -6,69 +9,68 @@ class Repository():
     """
     """
 
-    def __init__(self):
-        print('init')
+    # TODO: prompt asking the user if they would like to check for modules?
+    def __init__(self, url="https://s3.amazonaws.com/lime-modules/"):
+        """
+        """
+        self.url = url
 
-    def get_kernel_module(self):
+    def search_modules(self, kernel_version):
+        """
+        """
+        self.kernel_version = kernel_version
+        manifest = self.list_modules()
+        # TODO: standardize keys?
+        # TODO: allow setting patter for keys
+        key = "{0}.ko".format(kernel_version)
+        alt_key = "lime-{0}.ko".format(kernel_version)
+        # TODO allow prompting the user to select multiple matches
+        match = None
+        if manifest is not None:
+            for entry in manifest:
+                entry_key = entry['Key']
+                if key == entry_key or alt_key == entry_key:
+                    match = entry_key
+        return match
+
+    def list_modules(self):
+        """
+        """
+        req = requests.get(self.url)
+        if req.status_code is 200:
+            data = req.text
+        else:
+            # TODO: handle differnetly
+            return None
+        try:
+            manifest = xmltodict.parse(data)
+            return manifest['ListBucketResult']['Contents']
+        # TODO: handle specific exceptions
+        # TODO: handle different exception for dictionary key errors
+        except Exception as ex:
+            # TODO: log an error and raise the exception
+            return None
+
+    def fetch_module(self, urn, filename=None, chunk_size=4096, verify=False):
+        """
+        """
+        if filename is None:
+            datestamp = datetime.datetime.now().isoformat()
+            filename = "lime-{0}-{1}.ko".format(datestamp, self.kernel_version)
+        url = self.url + urn
+        req = requests.get(url, stream=True)
+
+        with open(filename, 'w') as f:
+            for chunk in req.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    f.write(str(chunk))
+
+        # TODO: verify file agains gpg key here
+
+        return filename
+
+    def verify_module_signature(self):
+        """
+        """
         print('todo')
-#    def get_kernel_module(self, bucket_path="lime-modules"):
-#        kernel_version = self.get_kernel_version()
-#        self.logger.info("{} kernel version: {}".format(self.address,
-#                                                        kernel_version))
-#        mod = self.match_kernel_module(kernel_version)
-#        if mod[0] is False:
-#            self.logger.info("No Matching Lime Module Found")
-#            return (None, kernel_version)
-#        else:
-#            url = "{}/{}/{}".format(self.s3_prefix, bucket_path, mod[1]['Key'])
-#            req = requests.get(url, stream=True)
-#            datestamp = datetime.datetime.now().isoformat()
-#            filename = "lime_download_{}_{}.ko".format(kernel_version,
-#                                                       datestamp)
-#            self.logger.info("downloading {} as {}".format(url, filename))
-#            try:
-#                with open(filename, 'w') as f:
-#                    for chunk in req.iter_content(chunk_size=4096):
-#                        if chunk:
-#                            f.write(str(chunk))
-#            except IOError as e:
-#                self.logger.info("Error fetching lime module: {}".format(
-#                                 str(e)))
-#                raise
-#
-#            if self.verify_kernel_module(filename, url) is False:
-#                raise LimeError('signature check failed for {}'.format(
-#                                filename))
-#            return (filename, kernel_version)
-
-    def match_kernel_module(self):
-        print('todo')
-
-#    def match_kernel_module(self, kernel_version):
-#        manifest = self.enumerate_kernel_modules()
-#        lime_key = "{}.ko".format(kernel_version)
-#        lime_key_alt = "lime-{}.ko".format(kernel_version)
-#        ret = None
-#        for entry in manifest:
-#            if lime_key == entry['Key'] or lime_key_alt == entry['Key']:
-#                ret = (True, entry)
-#                break
-#        if ret is None:
-#            ret = (False, None)
-#        return ret
-
-#    def enumerate_kernel_modules(self, bucket_path="lime-modules"):
-#        req = requests.get("https://s3.amazonaws.com/{}/".format(bucket_path))
-#        if req.status_code is 200:
-#            data = req.text
-#        else:
-#            self.logger.info("Cannot enumerate lime module repository")
-#        try:
-#            manifest = xmltodict.parse(data)
-#        except Exception as e:
-#            self.logger.info("Error parsing repository listing {}".format(e))
-#        return manifest['ListBucketResult']['Contents']
-
-
-
-
+        return True

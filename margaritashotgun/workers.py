@@ -1,10 +1,12 @@
 import multiprocessing
 from multiprocessing import Pool
-import margaritashotgun.remote_host
+from margaritashotgun import remote_host
 import logging
 
-logger = logging.getLogger(__name__)
+#????
+import signal
 
+logger = logging.getLogger(__name__)
 
 class Workers():
     """
@@ -14,39 +16,40 @@ class Workers():
     progress_bar = True
     hosts = None
 
-    def __init__(self, hosts, workers, library=True):
+    def __init__(self, conf, workers, library=True):
         """
         """
-
-        hosts = hosts
-        cpu_count = multiprocessing.cpu_count()
-        host_count = len(hosts)
-        worker_count = self.count(workers, cpu_count, host_count)
-        if worker_count > 1 or library is True:
-            progress_bar = False
-
-        hosts = [host['progress_bar'] = progress_bar for host in hosts]
+        # TODO: parameterize this
+        self.library = library
+        self.progressbar = True
+        self.cpu_count = multiprocessing.cpu_count()
+        host_count = len(conf)
+        self.worker_count = self.count(workers, self.cpu_count, host_count)
+        if self.worker_count > 1 or self.library is True:
+            self.progressbar = False
+        self.conf = []
+        for c in conf:
+            c['host']['progressbar'] = self.progressbar
+            self.conf.append(c)
 
     def count(self, workers, cpu_count, host_count):
         """
         """
         if workers == 'auto':
             worker_count = cpu_count
-        if workers > host_count:
+        elif workers > host_count:
             worker_count = host_count
         else:
             worker_count = int(workers)
         return worker_count
 
-    def spawn(self):
+    # TODO: support configuring the memory capture timeout
+    def spawn(self, timeout=1800):
         """
         """
-        print("todo")
-        return 0
-        # for later
-        pool = Pool(worker_count)
-        results = pool.map(func, hosts)
+        pool = Pool(self.worker_count)
+        res = pool.map_async(remote_host.process, self.conf)
+        results = res.get(500)
         pool.close()
         pool.join()
         return results
-
