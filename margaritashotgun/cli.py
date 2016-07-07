@@ -3,10 +3,6 @@ import os
 import yaml
 from yaml import YAMLError
 from margaritashotgun.exceptions import InvalidConfigurationError
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 default_allowed_keys = ["aws", "hosts", "workers", "logging"]
 aws_allowed_keys = ["bucket"]
@@ -60,6 +56,8 @@ class Cli():
                           help=('number of workers to run in parallel,'
                                 'default: auto acceptable values are'
                                 '(INTEGER | "auto")'))
+        opts.add_argument('-v', '--verbose', action='store_true',
+                          help='log debug messages')
 
         output = parser.add_mutually_exclusive_group(required=False)
         output.add_argument('-b', '--bucket',
