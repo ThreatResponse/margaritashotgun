@@ -1,12 +1,11 @@
 import sys
 import random
 import logging
+import margaritashotgun
 import margaritashotgun.remote_host
 from margaritashotgun.cli import Cli
 from margaritashotgun.exceptions import NoConfigurationError
 from margaritashotgun.workers import Workers
-
-logger = logging.getLogger(__name__)
 
 
 class Client():
@@ -14,7 +13,7 @@ class Client():
     Client for parallel memory capture with LiME
     """
 
-    def __init__(self, config=None, library=True):
+    def __init__(self, config=None, library=True, name=None, verbose=False):
         """
         :type library: bool
         :param library: Toggle for command line features
@@ -22,23 +21,33 @@ class Client():
         :param config: Client configuration
         """
 
+        self.name = name
+        self.verbose = verbose
         self.cli = Cli()
         self.library = library
         if self.library is False:
             args = self.cli.parse_args(sys.argv[1:])
             self.config = self.cli.configure(arguments=args)
+            if args.verbose is True:
+                self.verbose = True
         else:
             if config is None:
                 raise NoConfigurationError
             self.config = self.cli.configure(config=config)
 
+        if self.verbose is True:
+            margaritashotgun.set_stream_logger(level=logging.DEBUG)
+
+
+
     def run(self):
         """
         Captures remote hosts memory
         """
+        logger = logging.getLogger(__name__)
         try:
             conf = self.map_config()
-            workers = Workers(conf, self.config['workers'], library=self.library)
+            workers = Workers(conf, self.config['workers'], name=self.name, library=self.library)
             results = workers.spawn()
 
             self.statistics(results)

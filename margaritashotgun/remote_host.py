@@ -1,5 +1,6 @@
 import sys
 import logging
+import logging.handlers
 import random
 import time
 from margaritashotgun.auth import Auth
@@ -8,11 +9,13 @@ from margaritashotgun.ssh_tunnel import SSHTunnel
 from margaritashotgun.repository import Repository
 from margaritashotgun.memory import Memory, OutputDestinations
 
-logger = logging.getLogger(__name__)
 
-# TODO: pull params from host config
 # TODO: add config item to resolve modules automatically
 # TODO: add config item repository url (only suports s3 bucket for now
+
+def _init(queue):
+    global log_queue
+    log_queue = queue
 
 def process(conf):
     """
@@ -31,18 +34,24 @@ def process(conf):
     tunnel_port = random.randint(10000, 30000)
     remote_module_path = '/tmp/lime.ko'
 
+    #TODO: parameterize? do we do this elsewhere?
+    desc = "margaritashotgun action"
+
+    queue_handler = logging.handlers.QueueHandler(log_queue)
+    logger = logging.getLogger('margaritashotgun')
+    logger.addHandler(queue_handler)
+    #logger = LogWrapper(json_log, log.level, desc=desc)
+
     if bucket is not None:
         dest = OutputDestinations.s3
-    elif filename is not None:
-        dest = OutputDestinations.local
     else:
-        dest = None
+        dest = OutputDestinations.local
 
     if filename is None:
         filename = "{0}_mem.lime".format(remote_addr)
 
-    host = Host()
     try:
+        host = Host(logger=logger)
         host.connect(username, password, key, remote_addr, remote_port)
         host.start_tunnel(tunnel_port, tunnel_addr, tunnel_port)
         # TODO: cleanup, if I can implement the rest
@@ -69,18 +78,26 @@ def process(conf):
 
         if lime_loaded:
             result = host.capture_memory(dest, filename, bucket, progressbar)
+        else:
+            result = None
         host.cleanup()
 
         return (remote_addr, result)
     except KeyboardInterrupt:
         host.cleanup()
         return (remote_addr, result)
-        #quit()
-        #sys.exit()
+    except Exception as ex:
+        # TODO: log other exception, return failure condition
+        host.cleanup()
+        print(ex)
+        return (remote_addr, False)
 
 class Host():
 
-    def __init__(self):
+    def __init__(self, logger=None):
+        """
+        """
+        self.logger = logger
         self.memory = None
         self.tunnel = None
         self.shell = None
@@ -88,10 +105,9 @@ class Host():
         self.remote_port = None
         self.tunnel_addr = "127.0.0.1"
         self.tunnel_port = None
-        self.log_wrapper = None
-        self.shell = RemoteShell()
+        self.shell = RemoteShell(logger=self.logger)
         self.commands = Commands
-        self.tunnel = SSHTunnel()
+        self.tunnel = SSHTunnel(log=self.logger)
 
     def connect(self, username, password, key, address, port):
         """
@@ -230,7 +246,7 @@ class Host():
         """
         """
         mem_size = self.mem_size()
-        mem = Memory(self.remote_addr, mem_size, progressbar=progressbar)
+        mem = Memory(self.remote_addr, mem_size, progressbar=progressbar, logger=self.log)
         mem.capture(self.tunnel_addr, self.tunnel_port, destination=destination,
                     filename=filename, bucket=bucket)
 

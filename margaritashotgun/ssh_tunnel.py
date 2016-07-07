@@ -13,12 +13,14 @@ try:
 except ImportError:
     import SocketServer as socketserver
 
-logger = logging.getLogger(__name__)
-
 
 class SSHTunnel():
 
-    def __init__(self):
+    def __init__(self, log=None):
+        if log is not None:
+            global logger
+            logger = log
+
         self.transport = None
         self.forward = None
 

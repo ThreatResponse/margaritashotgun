@@ -1,12 +1,14 @@
 import multiprocessing
 from multiprocessing import Pool
 from margaritashotgun import remote_host
+from margaritashotgun import logger
 import logging
 
-#????
-import signal
 
-logger = logging.getLogger(__name__)
+def _init(queue):
+    global log_queue
+    log_queue = queue
+
 
 class Workers():
     """
@@ -16,15 +18,18 @@ class Workers():
     progress_bar = True
     hosts = None
 
-    def __init__(self, conf, workers, library=True):
+    def __init__(self, conf, workers, name, library=True):
         """
         """
-        # TODO: parameterize this
+        self.name = name
         self.library = library
         self.progressbar = True
         self.cpu_count = multiprocessing.cpu_count()
         host_count = len(conf)
         self.worker_count = self.count(workers, self.cpu_count, host_count)
+        self.log_file = "{}{}margaritashotgun_actions.log".format(
+                            conf[0]['logging']['log_dir'],
+                            conf[0]['logging']['prefix'])
         if self.worker_count > 1 or self.library is True:
             self.progressbar = False
         self.conf = []
@@ -43,13 +48,19 @@ class Workers():
             worker_count = int(workers)
         return worker_count
 
-    # TODO: support configuring the memory capture timeout
     def spawn(self, timeout=1800):
         """
         """
-        pool = Pool(self.worker_count)
+        #TODO: move queue to argument? # -1 is queue maxsize
+        queue = multiprocessing.Queue(-1)
+        pool = Pool(self.worker_count, initializer=remote_host._init, initargs=(queue,))
+        # setup logging listener
+        listener = logger.Logger(target=logger.listener, args=(queue, self.name, self.log_file))
+        listener.start()
         res = pool.map_async(remote_host.process, self.conf)
-        results = res.get(500)
+        results = res.get(timeout)
         pool.close()
         pool.join()
+        queue.put_nowait(None)
+        listener.join()
         return results
