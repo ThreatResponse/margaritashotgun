@@ -9,6 +9,10 @@ from margaritashotgun.ssh_tunnel import SSHTunnel
 from margaritashotgun.repository import Repository
 from margaritashotgun.memory import Memory, OutputDestinations
 
+try:
+    from logging.handlers import QueueHandler
+except ImportError:
+    from logutils.queue import QueueHandler
 
 # TODO: add config item to resolve modules automatically
 # TODO: add config item repository url (only suports s3 bucket for now
@@ -37,10 +41,9 @@ def process(conf):
     #TODO: parameterize? do we do this elsewhere?
     desc = "margaritashotgun action"
 
-    queue_handler = logging.handlers.QueueHandler(log_queue)
+    queue_handler = QueueHandler(log_queue)
     logger = logging.getLogger('margaritashotgun')
     logger.addHandler(queue_handler)
-    #logger = LogWrapper(json_log, log.level, desc=desc)
 
     if bucket is not None:
         dest = OutputDestinations.s3

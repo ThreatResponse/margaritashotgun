@@ -9,3 +9,4 @@ progressbar-latest
 enum34
 requests
 xmltodict
+logutils
