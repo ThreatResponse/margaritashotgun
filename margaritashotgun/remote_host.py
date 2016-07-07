@@ -249,7 +249,7 @@ class Host():
         """
         """
         mem_size = self.mem_size()
-        mem = Memory(self.remote_addr, mem_size, progressbar=progressbar, logger=self.log)
+        mem = Memory(self.remote_addr, mem_size, progressbar=progressbar, log=self.logger)
         mem.capture(self.tunnel_addr, self.tunnel_port, destination=destination,
                     filename=filename, bucket=bucket)
 
