@@ -5,11 +5,6 @@ from margaritashotgun import logger
 import logging
 
 
-def _init(queue):
-    global log_queue
-    log_queue = queue
-
-
 class Workers():
     """
     """
@@ -27,9 +22,20 @@ class Workers():
         self.cpu_count = multiprocessing.cpu_count()
         host_count = len(conf)
         self.worker_count = self.count(workers, self.cpu_count, host_count)
-        self.log_file = "{}{}margaritashotgun_actions.log".format(
-                            conf[0]['logging']['log_dir'],
-                            conf[0]['logging']['prefix'])
+        self.queue = multiprocessing.Queue(-1)
+
+        try:
+            log_dir = conf[0]['logging']['log_dir']
+        except KeyError:
+            log_dir = ""
+        try:
+            log_prefix = conf[0]['logging']['log_prefix']
+        except KeyError:
+            log_prefix = ""
+
+        self.log_file = "{}{}memory_capture.log".format(
+                            log_dir, log_prefix)
+
         if self.worker_count > 1 or self.library is True:
             self.progressbar = False
         self.conf = []
@@ -41,26 +47,36 @@ class Workers():
         """
         """
         if workers == 'auto':
-            worker_count = cpu_count
+            if cpu_count > host_count:
+                worker_count = host_count
+            else:
+                worker_count = cpu_count
         elif workers > host_count:
             worker_count = host_count
         else:
             worker_count = int(workers)
         return worker_count
 
-    def spawn(self, timeout=1800):
+    def spawn(self, desc, timeout=1800):
         """
         """
-        #TODO: move queue to argument? # -1 is queue maxsize
-        queue = multiprocessing.Queue(-1)
-        pool = Pool(self.worker_count, initializer=remote_host._init, initargs=(queue,))
-        # setup logging listener
-        listener = logger.Logger(target=logger.listener, args=(queue, self.name, self.log_file))
-        listener.start()
-        res = pool.map_async(remote_host.process, self.conf)
+        self.pool = Pool(self.worker_count, initializer=remote_host._init,
+                        initargs=(self.queue,))
+
+        self.listener = logger.Logger(target=logger.listener,
+                                      args=(self.queue,
+                                            self.name,
+                                            self.log_file,
+                                            desc))
+        self.listener.start()
+
+        res = self.pool.map_async(remote_host.process, self.conf)
         results = res.get(timeout)
-        pool.close()
-        pool.join()
-        queue.put_nowait(None)
-        listener.join()
+
+        self.cleanup()
         return results
+
+    def cleanup(self):
+        self.pool.close()
+        self.pool.join()
+        self.listener.join()

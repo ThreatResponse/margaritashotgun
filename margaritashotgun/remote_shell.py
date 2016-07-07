@@ -7,7 +7,7 @@ from margaritashotgun.auth import AuthMethods
 from margaritashotgun.exceptions import *
 import logging
 
-#logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Commands(Enum):
@@ -21,14 +21,11 @@ class Commands(Enum):
 
 class RemoteShell():
 
-    def __init__(self, max_async_threads=2, logger=None):
+    def __init__(self, max_async_threads=2):
         """
         :type args: int
         :param args: maximun number of async command executors
         """
-        #if log is not None:
-        #    global logger
-        self.logger = logger
 
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -50,7 +47,7 @@ class RemoteShell():
         self.address = address
         self.port = port
         try:
-            self.logger.debug(("{0}: paramiko client connecting to "
+            logger.debug(("{0}: paramiko client connecting to "
                           "{0}:{1} with {2}".format(address,
                                                     port,
                                                     auth.method)))
@@ -61,7 +58,7 @@ class RemoteShell():
                                            address, port)
             else:
                 raise AuthenticationMethodMissingError()
-            self.logger.debug(("{0}: paramiko client connected to "
+            logger.debug(("{0}: paramiko client connected to "
                           "{0}:{1}".format(address, port)))
         except (AuthenticationException, SSHException, SocketError) as ex:
             raise SSHConnectionError("{0}:{1}".format(address, port), ex)
@@ -110,7 +107,7 @@ class RemoteShell():
         :type command: str
         :param command: command to be run on remote host
         """
-        self.logger.debug('{0}: executing "{1}"'.format(self.address, command))
+        logger.debug('{0}: executing "{1}"'.format(self.address, command))
         stdin, stdout, stderr = self.ssh.exec_command(command)
         return dict(zip(['stdin', 'stdout', 'stderr'],
                         [stdin, stdout, stderr]))
@@ -124,7 +121,7 @@ class RemoteShell():
         :type callback: function
         :param callback: function to call when execution completes
         """
-        self.logger.debug(('{0}: execute async "{1}"'
+        logger.debug(('{0}: execute async "{1}"'
                       'with callback {2}'.format(self.address, command,
                                                  callback)))
         future = self.executor.submit(self.execute, command)
@@ -143,7 +140,7 @@ class RemoteShell():
         """
         data = stream.read().decode(encoding).strip("\n")
         if data != "":
-            self.logger.debug(('{0}: decoded "{1}" with encoding '
+            logger.debug(('{0}: decoded "{1}" with encoding '
                           '{2}'.format(self.address, data, encoding)))
         return data
 
@@ -156,7 +153,7 @@ class RemoteShell():
         :type remote_path: str
         :param remote_path: destination path of upload on remote host
         """
-        self.logger.debug("{0}: uploading {1} to {0}:{2}".format(self.address,
+        logger.debug("{0}: uploading {1} to {0}:{2}".format(self.address,
                                                             local_path,
                                                             remote_path))
         try:
@@ -164,7 +161,7 @@ class RemoteShell():
             sftp.put(local_path, remote_path)
             sftp.close()
         except SSHException as ex:
-            self.logger.WARN(("{0}: LiME module upload failed with exception:"
+            logger.warn(("{0}: LiME module upload failed with exception:"
                          "{1}".format(self.address, ex)))
 
     def cleanup(self):

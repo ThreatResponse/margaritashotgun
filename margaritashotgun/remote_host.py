@@ -38,9 +38,6 @@ def process(conf):
     tunnel_port = random.randint(10000, 30000)
     remote_module_path = '/tmp/lime.ko'
 
-    #TODO: parameterize? do we do this elsewhere?
-    desc = "margaritashotgun action"
-
     queue_handler = QueueHandler(log_queue)
     logger = logging.getLogger('margaritashotgun')
     logger.addHandler(queue_handler)
@@ -54,7 +51,7 @@ def process(conf):
         filename = "{0}_mem.lime".format(remote_addr)
 
     try:
-        host = Host(logger=logger)
+        host = Host()
         host.connect(username, password, key, remote_addr, remote_port)
         host.start_tunnel(tunnel_port, tunnel_addr, tunnel_port)
         # TODO: cleanup, if I can implement the rest
@@ -82,13 +79,15 @@ def process(conf):
         if lime_loaded:
             result = host.capture_memory(dest, filename, bucket, progressbar)
         else:
-            result = None
+            result = False
         host.cleanup()
 
         return (remote_addr, result)
     except KeyboardInterrupt:
+        logger.removeHandler(queue_handler)
+        queue_handler.close()
         host.cleanup()
-        return (remote_addr, result)
+        return (remote_addr, False)
     except Exception as ex:
         # TODO: log other exception, return failure condition
         host.cleanup()
@@ -97,10 +96,9 @@ def process(conf):
 
 class Host():
 
-    def __init__(self, logger=None):
+    def __init__(self):
         """
         """
-        self.logger = logger
         self.memory = None
         self.tunnel = None
         self.shell = None
@@ -108,9 +106,9 @@ class Host():
         self.remote_port = None
         self.tunnel_addr = "127.0.0.1"
         self.tunnel_port = None
-        self.shell = RemoteShell(logger=self.logger)
+        self.shell = RemoteShell()
         self.commands = Commands
-        self.tunnel = SSHTunnel(log=self.logger)
+        self.tunnel = SSHTunnel()
 
     def connect(self, username, password, key, address, port):
         """
@@ -249,7 +247,7 @@ class Host():
         """
         """
         mem_size = self.mem_size()
-        mem = Memory(self.remote_addr, mem_size, progressbar=progressbar, log=self.logger)
+        mem = Memory(self.remote_addr, mem_size, progressbar=progressbar)
         mem.capture(self.tunnel_addr, self.tunnel_port, destination=destination,
                     filename=filename, bucket=bucket)
 

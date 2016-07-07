@@ -36,7 +36,9 @@ class Client():
             self.config = self.cli.configure(config=config)
 
         if self.verbose is True:
-            margaritashotgun.set_stream_logger(level=logging.DEBUG)
+            margaritashotgun.set_stream_logger(name=self.name, level=logging.DEBUG)
+        else:
+            margaritashotgun.set_stream_logger(name=self.name, level=logging.INFO)
 
 
 
@@ -48,19 +50,23 @@ class Client():
         try:
             conf = self.map_config()
             workers = Workers(conf, self.config['workers'], name=self.name, library=self.library)
-            results = workers.spawn()
+            description = 'memory capture action'
+            results = workers.spawn(description)
 
             self.statistics(results)
-            logger.info(("{0} hosts processed. completed: {1} "
-                         "failed {2}".format(self.total, self.completed,
-                                             self.failed)))
-            logger.info("completed_hosts: {0}".format(self.completed_addresses))
-            logger.info("failed_hosts: {0}".format(self.failed_addresses))
             if self.library is True:
-                return results
+                return dict([('total', self.total),
+                             ('completed', self.completed_addresses)
+                             ('failed', self.failed_addresses)])
             else:
+                logger.info(("{0} hosts processed. completed: {1} "
+                             "failed {2}".format(self.total, self.completed,
+                                                 self.failed)))
+                logger.info("completed_hosts: {0}".format(self.completed_addresses))
+                logger.info("failed_hosts: {0}".format(self.failed_addresses))
                 quit()
         except KeyboardInterrupt:
+            workers.cleanup()
             quit(1)
 
     def map_config(self):

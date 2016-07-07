@@ -7,6 +7,8 @@ import s3fs
 import logging
 from margaritashotgun.exceptions import *
 
+logger = logging.getLogger(__name__)
+
 
 class OutputDestinations(Enum):
     local = 'local'
@@ -16,7 +18,7 @@ class OutputDestinations(Enum):
 class Memory():
 
     def __init__(self, remote_addr, mem_size, progressbar=False,
-                 recv_size=1048576, sock_timeout=1, log=None):
+                 recv_size=1048576, sock_timeout=1):
         """
         :type remote_addr: str
         :param remote_addr: hostname or ip address of target server
@@ -29,10 +31,6 @@ class Memory():
         :type sock_timeout: int
         :param sock_timeout: transfer socket receive timeout
         """
-
-        global logger
-        logger = log
-
         self.mem_size = mem_size
         self.progressbar = progressbar
         self.recv_size = recv_size
@@ -81,8 +79,8 @@ class Memory():
         if filename is None:
             raise MemoryCaptureAttributeMissingError('filename')
         if destination == OutputDestinations.local:
-            logger.info("{0}: dumping to file:///{1}".format(self.remote_addr,
-                                                             filename))
+            logger.info("{0}: dumping to file://{1}".format(self.remote_addr,
+                                                            filename))
             result = self.to_file(filename, tunnel_addr, tunnel_port)
         elif destination == OutputDestinations.s3:
             if bucket is None:
@@ -207,7 +205,6 @@ class Memory():
                     else:
                         self.cleanup()
                         raise
-
         self.cleanup()
         logger.info('{0}: capture complete: s3://{1}/{2}'.format(self.remote_addr,
                                                                  bucket,
