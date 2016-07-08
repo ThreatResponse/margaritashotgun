@@ -26,6 +26,8 @@ class Workers():
 
         try:
             log_dir = conf[0]['logging']['log_dir']
+            if log_dir[-1:] != '/':
+                log_dir = log_dir + '/'
         except KeyError:
             log_dir = ""
         try:
@@ -33,7 +35,7 @@ class Workers():
         except KeyError:
             log_prefix = ""
 
-        self.log_file = "{}{}memory_capture.log".format(
+        self.log_file = "{}{}memory-capture.log".format(
                             log_dir, log_prefix)
 
         if self.worker_count > 1 or self.library is True:
@@ -75,8 +77,11 @@ class Workers():
         self.cleanup()
         return results
 
-    def cleanup(self):
-        self.pool.close()
+    def cleanup(self, terminate=False):
+        if terminate:
+            self.pool.terminate()
+        else:
+            self.pool.close()
         self.pool.join()
         self.queue.put_nowait(None)
         self.queue.close()

@@ -49,7 +49,7 @@ def process(conf):
         dest = OutputDestinations.local
 
     if filename is None:
-        filename = "{0}_mem.lime".format(remote_addr)
+        filename = "{0}-mem.lime".format(remote_addr)
 
     try:
         host = Host()
