@@ -79,6 +79,9 @@ def process(conf):
             result = host.capture_memory(dest, filename, bucket, progressbar)
         else:
             result = False
+
+        logger.removeHandler(queue_handler)
+        queue_handler.close()
         host.cleanup()
 
         return (remote_addr, result)
@@ -88,7 +91,8 @@ def process(conf):
         host.cleanup()
         return (remote_addr, False)
     except Exception as ex:
-        # TODO: log other exception, return failure condition
+        logger.removeHandler(queue_handler)
+        queue_handler.close()
         host.cleanup()
         logger.critical(ex)
         return (remote_addr, False)
