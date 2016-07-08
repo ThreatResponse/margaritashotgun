@@ -20,7 +20,6 @@ def listener(queue, name, log_file, desc):
         "desc: '{}', 'datetime': '%(isotime)s'}},".format(desc)
     )
     fileHandler.setFormatter(formatter)
-    root.addHandler(fileHandler)
 
     while True:
         try:
@@ -38,7 +37,8 @@ def listener(queue, name, log_file, desc):
                                        extra=get_times())
             fileHandler.handle(record)
         except KeyboardInterrupt:
-            break
+            # Parent process to terminate
+            pass
         except Exception as ex:
             print(ex)
             break

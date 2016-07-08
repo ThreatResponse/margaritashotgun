@@ -69,11 +69,9 @@ class Workers():
                                             self.log_file,
                                             desc))
         self.listener.start()
-        print('pre res')
         res = self.pool.map_async(remote_host.process, self.conf)
         results = res.get(timeout)
 
-        print('post res')
         self.cleanup()
         return results
 
@@ -81,4 +79,5 @@ class Workers():
         self.pool.close()
         self.pool.join()
         self.queue.put_nowait(None)
+        self.queue.close()
         self.listener.join()
