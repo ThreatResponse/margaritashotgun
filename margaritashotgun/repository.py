@@ -58,6 +58,7 @@ class Repository():
             datestamp = datetime.datetime.now().isoformat()
             filename = "lime-{0}-{1}.ko".format(datestamp, self.kernel_version)
         url = self.url + urn
+        logger.info("downloading {0} as {1}".format(url, filename))
         req = requests.get(url, stream=True)
 
         with open(filename, 'w') as f:
