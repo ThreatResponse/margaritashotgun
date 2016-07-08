@@ -3,6 +3,7 @@ import logging
 import logging.handlers
 import random
 import time
+from margaritashotgun.exceptions import *
 from margaritashotgun.auth import Auth
 from margaritashotgun.remote_shell import RemoteShell, Commands
 from margaritashotgun.ssh_tunnel import SSHTunnel
@@ -66,10 +67,8 @@ def process(conf):
                 # TODO: support user provided filename?
                 lime_module = repo.fetch_module(match)
                 host.upload_module(lime_module)
-            # else
-                # log no module provided
-                # raise error no module provided
-                # exit
+            else:
+                raise KernelModuleNotFoundError(kernel_version, repo.url)
         else:
             host.upload_module(lime_module, remote_module_path)
 
@@ -91,7 +90,7 @@ def process(conf):
     except Exception as ex:
         # TODO: log other exception, return failure condition
         host.cleanup()
-        print(ex)
+        logger.critical(ex)
         return (remote_addr, False)
 
 class Host():
