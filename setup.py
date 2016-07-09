@@ -22,4 +22,6 @@ setup(name="margarita_shotgun",
                         'paramiko==1.16.0',
                         'pyyaml==3.11',
                         's3fs==0.0.2',
-                        'progressbar_latest==2.4.0'])
+                        'progressbar_latest==2.4.0',
+                        'requests',
+                        'xmltodict'])

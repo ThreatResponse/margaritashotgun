@@ -7,3 +7,6 @@ hosts:
       key:      dev.pem
       module:   lime-3.13.0-74-generic.ko
 workers: 1
+logging:
+    dir: /tmp
+    prefix: <case number>

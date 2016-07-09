@@ -1,12 +1,11 @@
 #!/usr/bin/env python
+
 import sys
 import os
 sys.path.append(os.getcwd())
 
-try:
-    from margaritashotgun.margaritashotgun import margaritashotgun
-except ImportError:
-    from margaritashotgun import margaritashotgun
+import margaritashotgun
 
-ms = margaritashotgun()
-ms.run()
+name = 'margaritashotgun'
+client = margaritashotgun.client(library=False, name=name)
+client.run()

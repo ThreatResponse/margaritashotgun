@@ -2,11 +2,11 @@
 
 ## Installing
 
-`pip install git+ssh://github.com/joelferrier/margaritashotgun.git@develop`
+`pip install git+ssh://github.com/ThreatResponse/python-margaritashotgun-private.git@develop`
 
 ## Usage
 
-From the project root: `./bin/margarita-shotgun -h`
+From the project root: `./bin/margaritashotgun -h`
 
 
     usage: cli.py [-h] [-s SERVER] [-u USERNAME] [-p PASSWORD] [-k KEYFILE]
@@ -45,6 +45,9 @@ To upload to s3 use the following format:
           keyfile:  access.pem
           module:   lime-4.1.19-24.31.amzn1.x86_64.ko
     workers: 1
+    logging:
+        dir: 'logs/'
+        prefix: <case-number>
 
 To write to a local file exclude the aws section from configuration  
   
@@ -52,17 +55,29 @@ The `workers` configuration is an optional config item with the default configur
   
 Additional Config examples are included in the conf directory  
 
+##  AWS Credentials
+
+Credentials will be automatically loaded from the environment if none are specified in the config file  
+
 ## Parallel Execution
 
 Memory can be captured in parallel however parallelism is limited by the number of workers configured.  Each worker is spawned as a new process to avoid problems with the GIL.  It is not recommended to configure more workers than there are cores on machine running margarita shotgun.  
 
 To match the number of cpu's on the host set `workers: auto`
 
+## Logging
+
+TODO  
+
 ## Building
 
 `python setup.py sdist` places build artifacts in `dist/`  
 
 Install with `pip install dist/margarita_shotgun-0.1.0.tar.gz`  
+
+## Tests
+
+    py.test --cov=margaritashotgun
 
 ## License
 
