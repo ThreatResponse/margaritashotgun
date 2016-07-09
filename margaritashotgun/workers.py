@@ -31,7 +31,7 @@ class Workers():
         except KeyError:
             log_dir = ""
         try:
-            log_prefix = conf[0]['logging']['prefix']
+            log_prefix = conf[0]['logging']['prefix'] + "-"
         except KeyError:
             log_prefix = ""
 
