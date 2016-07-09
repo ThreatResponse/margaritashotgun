@@ -1,8 +1,11 @@
 import argparse
+import logging
 import os
 import yaml
 from yaml import YAMLError
 from margaritashotgun.exceptions import InvalidConfigurationError
+
+logger = logging.getLogger(__name__)
 
 default_allowed_keys = ["aws", "hosts", "workers", "logging"]
 aws_allowed_keys = ["bucket"]
