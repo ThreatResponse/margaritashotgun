@@ -56,7 +56,7 @@ class Client():
             self.statistics(results)
             if self.library is True:
                 return dict([('total', self.total),
-                             ('completed', self.completed_addresses)
+                             ('completed', self.completed_addresses),
                              ('failed', self.failed_addresses)])
             else:
                 logger.info(("{0} hosts processed. completed: {1} "
