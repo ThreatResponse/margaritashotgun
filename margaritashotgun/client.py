@@ -67,7 +67,10 @@ class Client():
                 quit()
         except KeyboardInterrupt:
             workers.cleanup(terminate=True)
-            quit(1)
+            if self.library:
+                raise
+            else:
+                quit(1)
 
     def map_config(self):
         config_list = []
