@@ -39,6 +39,9 @@ def process(conf):
     tunnel_port = random.randint(10000, 30000)
     remote_module_path = '/tmp/lime.ko'
 
+    repository_enabled = conf['repository']['enabled']
+    repository_url = conf['repository']['url']
+
     queue_handler = QueueHandler(log_queue)
     logger = logging.getLogger('margaritashotgun')
     logger.addHandler(queue_handler)
@@ -55,20 +58,19 @@ def process(conf):
         host = Host()
         host.connect(username, password, key, remote_addr, remote_port)
         host.start_tunnel(tunnel_port, tunnel_addr, tunnel_port)
-        # TODO: cleanup, if I can implement the rest
         if lime_module is None:
-            # if library is false && resolve_modules is not set in config
-                # log need to resolve modules or provide module and exit
-            # if resolve_modules is True
             kernel_version = host.kernel_version()
-            repo = Repository()
-            match = repo.search_modules(kernel_version)
-            if match is not None:
-                # TODO: support user provided filename?
-                lime_module = repo.fetch_module(match)
-                host.upload_module(lime_module)
+            if repository_enabled:
+                repo = Repository(repository_url)
+                match = repo.search_modules(kernel_version)
+                if match is not None:
+                    lime_module = repo.fetch_module(match)
+                    host.upload_module(lime_module)
+                else:
+                    raise KernelModuleNotFoundError(kernel_version, repo.url)
             else:
-                raise KernelModuleNotFoundError(kernel_version, repo.url)
+                # TODO: prompt user to search repository when running interactively
+                raise KernelModuleNotProvidedError(kernel_version)
         else:
             host.upload_module(lime_module, remote_module_path)
 

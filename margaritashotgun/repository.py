@@ -10,7 +10,7 @@ class Repository():
     """
 
     # TODO: prompt asking the user if they would like to check for modules?
-    def __init__(self, url="https://s3.amazonaws.com/lime-modules/"):
+    def __init__(self, url):
         """
         """
         self.url = url
