@@ -60,9 +60,9 @@ class Cli():
                           help='path to rsa key for ssh connection')
         opts.add_argument('-f', '--filename',
                           help='memory dump filename')
-        opts.add_argument('-repo', '--repository', action='store_true',
+        opts.add_argument('--repository', action='store_true',
                           help='enable automatic kernel module downloads')
-        opts.add_argument('-r', '--repository-url',
+        opts.add_argument('--repository-url',
                           help='repository url')
         opts.add_argument('-w', '--workers', default=1,
                           help=('number of workers to run in parallel,'
