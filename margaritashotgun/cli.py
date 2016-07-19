@@ -16,7 +16,7 @@ repository_allowed_keys = ["enabled", "url"]
 default_host_config = dict(zip(host_allowed_keys,
                                [None]*len(host_allowed_keys)))
 default_config = {"aws": {"bucket": None},
-                  "hosts": {},
+                  "hosts": [],
                   "workers": "auto",
                   "logging": {
                       "dir": None,
@@ -147,8 +147,8 @@ class Cli():
                             [arguments.server, arguments.port,
                              arguments.username, arguments.password,
                              module, key, arguments.filename]))
-
-            args_config['hosts'] = list(host)
+            args_config['hosts'] = []
+            args_config['hosts'].append(host)
 
         if config_path is not None:
             try:
