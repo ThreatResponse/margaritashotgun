@@ -114,7 +114,27 @@ class Cli():
             hosts.append(host)
         default_config['hosts'] = hosts
 
+        # override configuration with environment variables
+        repo = self.get_env_default('LIME_REPOSITORY',
+                                    default_config['repository']['enabled'])
+        repo_url = self.get_env_default('LIME_REPOSITORY_URL',
+                                    default_config['repository']['url'])
+        if repo.lower() == 'enabled':
+            default_config['repository']['enabled'] = True
+
+        default_config['repository']['url'] = repo_url
+
         return default_config
+
+    def get_env_default(self, variable, default):
+        """
+        Fetch environment variables, returning a default if not found
+        """
+        if variable in os.environ:
+            env_var = os.environ[variable]
+        else:
+            env_var = default
+        return env_var
 
     def configure_args(self, arguments):
         """
