@@ -1,43 +1,63 @@
 # Margarita Shotgun
 
-## Installing
+## Installation
 
-`pip install git+ssh://github.com/ThreatResponse/python-margaritashotgun-private.git@develop`
+`pip install git+ssh://git@github.com/ThreatResponse/python-margaritashotgun-private.git@develop`
 
 ## Usage
 
-From the project root: `./bin/margaritashotgun -h`
+```
+usage: margaritashotgun [-h] (-c CONFIG | -s SERVER) [-P PORT] [-u USERNAME]
+                        [-m MODULE] [-p PASSWORD] [-k KEY] [-f FILENAME]
+                        [--repository] [--repository-url REPOSITORY_URL]
+                        [-w WORKERS] [-v] [-b BUCKET | -o OUTPUT_DIR]
+                        [-d LOG_DIR] [--log_prefix LOG_PREFIX]
 
+Remote memory aquisition wrapper for LiME
 
-    usage: cli.py [-h] [-s SERVER] [-u USERNAME] [-p PASSWORD] [-k KEYFILE]
-                  [-m MODULE] [-c CONFIG]
-    
-    optional arguments:
-      -h, --help            show this help message and exit
-      -s SERVER, --server SERVER
-                            hostname or ip of target server
-      -u USERNAME, --username USERNAME
-                            username for ssh connection
-      -p PASSWORD, --password PASSWORD
-                            password user, or for encrypted keyfile when used with
-                            -k argument
-      -k KEYFILE, --keyfile KEYFILE
-                            path to rsa key for ssh connection
-      -m MODULE, --module MODULE
-                            path to kernel lime kernel module
-      -c CONFIG, --config CONFIG
-                            path to config.yml
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG, --config CONFIG
+                        path to config.yml
+  -s SERVER, --server SERVER
+                        hostname or ip of target server
+  -b BUCKET, --bucket BUCKET
+                        memory dump output bucket
+  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+                        memory dump output directory
+
+  -P PORT, --port PORT  ssh port on remote server
+  -u USERNAME, --username USERNAME
+                        username for ssh connection
+  -m MODULE, --module MODULE
+                        path to kernel lime kernel module
+  -p PASSWORD, --password PASSWORD
+                        password for user or encrypted keyfile
+  -k KEY, --key KEY     path to rsa key for ssh connection
+  -f FILENAME, --filename FILENAME
+                        memory dump filename
+  --repository          enable automatic kernel module downloads
+  --repository-url REPOSITORY_URL
+                        repository url
+  -w WORKERS, --workers WORKERS
+                        number of workers to run in parallel,default: auto
+                        acceptable values are(INTEGER | "auto")
+  -v, --verbose         log debug messages
+
+  -d LOG_DIR, --log_dir LOG_DIR
+                        log directory
+  --log_prefix LOG_PREFIX
+                        log file prefix
+```
 
 ## Configuration
 
 Margarita shotgun can be configured with a YAML formatted file passed in with the -c flag.  
   
-To upload to s3 use the following format:  
+The following config file will stream memory to an s3 bucket  
 
     aws:
         bucket: mshotgun
-        key:    <aws key id>
-        secret: <aws secret key>
     hosts:
         - addr:     52.36.191.XXX
           port:     22
@@ -45,23 +65,32 @@ To upload to s3 use the following format:
           keyfile:  access.pem
           module:   lime-4.1.19-24.31.amzn1.x86_64.ko
     workers: 1
+    repository:
+        enabled: True
+        url: https://threatresponse-lime-modules.s3.amazonaws.com/
     logging:
         dir: 'logs/'
         prefix: <case-number>
 
-To write to a local file exclude the aws section from configuration  
+To write to a local file exclude the aws section from the configuration file.  
   
 The `workers` configuration is an optional config item with the default configuration being a single worker.  More infomation about worker configuration is detailed in in the Parallel Execution section below.  
   
-Additional Config examples are included in the conf directory  
+Configuration examples are included in the conf directory  
+
+## Kernel Module Repository
+
+Modules for the following distributions are built and hosted in the s3 bucket `https://threatresponse-lime-modules.s3.amazonaws.com/`.  This repository can be enabled with the `--repository` flag or by setting the environment variable `LIME_REPOSITORY=enabled`.  
+
+Self hosted repositories can be configured with the `--repository-url` option or by setting the environment variable `LIME_REPOSITORY_URL`
 
 ##  AWS Credentials
 
-Credentials will be automatically loaded from the environment if none are specified in the config file  
+Credentials will be automatically loaded from the [environment](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files) or [aws config file](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-environment) as documented by amazon.
 
 ## Parallel Execution
 
-Memory can be captured in parallel however parallelism is limited by the number of workers configured.  Each worker is spawned as a new process to avoid problems with the GIL.  It is not recommended to configure more workers than there are cores on machine running margarita shotgun.  
+Memory can be captured in parallel however parallelism is limited by the number of workers configured.  Each worker is spawned as a new process.  
 
 To match the number of cpu's on the host set `workers: auto`
 
@@ -73,7 +102,7 @@ TODO
 
 `python setup.py sdist` places build artifacts in `dist/`  
 
-Install with `pip install dist/margarita_shotgun-0.1.0.tar.gz`  
+Install with `pip install dist/margarita_shotgun-*.tar.gz`  
 
 ## Tests
 
