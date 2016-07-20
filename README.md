@@ -90,7 +90,7 @@ Credentials will be automatically loaded from the [environment](https://docs.aws
 
 ## Parallel Execution
 
-Memory can be captured in parallel however parallelism is limited by the number of workers configured.  Each worker is spawned as a new process.  
+Memory can be captured in parallel, up to the configured worker count.  
 
 To match the number of cpu's on the host set `workers: auto`
 
