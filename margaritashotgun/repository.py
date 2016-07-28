@@ -51,7 +51,7 @@ class Repository():
             # TODO: log an error and raise the exception
             return None
 
-    def fetch_module(self, urn, filename=None, chunk_size=4096, verify=False):
+    def fetch_module(self, urn, filename=None, chunk_size=1024, verify=False):
         """
         """
         if filename is None:
@@ -59,12 +59,10 @@ class Repository():
             filename = "lime-{0}-{1}.ko".format(datestamp, self.kernel_version)
         url = self.url + urn
         logger.info("downloading {0} as {1}".format(url, filename))
-        req = requests.get(url, stream=True)
+        req = requests.get(url)
 
-        with open(filename, 'w') as f:
-            for chunk in req.iter_content(chunk_size=chunk_size):
-                if chunk:
-                    f.write(str(chunk))
+        with open(filename, 'wb') as f:
+            f.write(req.content)
 
         # TODO: verify file agains gpg key here
 
