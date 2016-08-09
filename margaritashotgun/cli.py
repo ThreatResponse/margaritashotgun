@@ -7,19 +7,24 @@ from margaritashotgun.exceptions import InvalidConfigurationError
 
 logger = logging.getLogger(__name__)
 
-default_allowed_keys = ["aws", "hosts", "workers", "logging"]
+default_allowed_keys = ["aws", "hosts", "workers", "logging", "repository"]
 aws_allowed_keys = ["bucket"]
 host_allowed_keys = ["addr", "port", "username", "password",
                      "module", "key", "filename"]
 logging_allowed_keys = ["log_dir", "prefix"]
+repository_allowed_keys = ["enabled", "url"]
 default_host_config = dict(zip(host_allowed_keys,
                                [None]*len(host_allowed_keys)))
 default_config = {"aws": {"bucket": None},
-                  "hosts": {},
+                  "hosts": [],
                   "workers": "auto",
                   "logging": {
                       "dir": None,
-                      "prefix": None}}
+                      "prefix": None},
+                  "repository": {
+                      "enabled": False,
+                      "url": "https://threatresponse-lime-modules.s3.amazonaws.com/"
+                  }}
 
 
 class Cli():
@@ -55,6 +60,10 @@ class Cli():
                           help='path to rsa key for ssh connection')
         opts.add_argument('-f', '--filename',
                           help='memory dump filename')
+        opts.add_argument('--repository', action='store_true',
+                          help='enable automatic kernel module downloads')
+        opts.add_argument('--repository-url',
+                          help='repository url')
         opts.add_argument('-w', '--workers', default=1,
                           help=('number of workers to run in parallel,'
                                 'default: auto acceptable values are'
@@ -105,7 +114,26 @@ class Cli():
             hosts.append(host)
         default_config['hosts'] = hosts
 
+        # override configuration with environment variables
+        repo = self.get_env_default('LIME_REPOSITORY', 'disabled')
+        repo_url = self.get_env_default('LIME_REPOSITORY_URL',
+                                    default_config['repository']['url'])
+        if repo.lower() == 'enabled':
+            default_config['repository']['enabled'] = True
+
+        default_config['repository']['url'] = repo_url
+
         return default_config
+
+    def get_env_default(self, variable, default):
+        """
+        Fetch environment variables, returning a default if not found
+        """
+        if variable in os.environ:
+            env_var = os.environ[variable]
+        else:
+            env_var = default
+        return env_var
 
     def configure_args(self, arguments):
         """
@@ -121,18 +149,25 @@ class Cli():
         output_dir, log_dir = self.check_directory_paths(arguments.output_dir,
                                                          arguments.log_dir)
 
+        if arguments.repository_url is None:
+            url = default_config['repository']['url']
+        else:
+            url = arguments.repository_url
+
         args_config = dict(aws=dict(bucket=arguments.bucket),
                            logging=dict(log_dir=arguments.log_dir,
                                         prefix=arguments.log_prefix),
-                           workers=arguments.workers)
+                           workers=arguments.workers,
+                           repository=dict(enabled=arguments.repository,
+                                           url=url))
 
         if arguments.server is not None:
             host = dict(zip(host_allowed_keys,
                             [arguments.server, arguments.port,
                              arguments.username, arguments.password,
                              module, key, arguments.filename]))
-
-            args_config['hosts'] = list(host)
+            args_config['hosts'] = []
+            args_config['hosts'].append(host)
 
         if config_path is not None:
             try:
@@ -246,6 +281,15 @@ class Cli():
         except KeyError:
             pass
 
+        # optional configuration
+        try:
+            for key in config['repository'].keys():
+                if key not in repository_allowed_keys:
+                    raise InvalidConfigurationError(key, config['repository'][key])
+        except KeyError:
+            pass
+
+        # required configuration
         if type(config['hosts']) is not list:
             raise InvalidConfigurationError('hosts', config['hosts'],
                                             reason="hosts must be a list")

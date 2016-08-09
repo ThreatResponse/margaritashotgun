@@ -53,12 +53,22 @@ class KernelModuleNotFoundError(MargaritaShotgunError):
     """
     def __init__(self, kernel_version, repo_url):
         msg = (
-            "The kernel module for {} does not exist."
+            "The kernel module for {} does not exist, "
             "searched {} for availible modules".format(kernel_version,
                                                        repo_url)
         )
         MargaritaShotgunError.__init__(self, msg)
 
+class KernelModuleNotProvidedError(MargaritaShotgunError):
+    """
+    Raised when no kernel module is provided and repository is disabled
+    """
+    def __init__(self, kernel_version):
+        msg = (
+            "The kernel module for {} was not provided, set the "
+            "--repository flag to enable kernel module downloads".format(kernel_version)
+        )
+        MargaritaShotgunError.__init__(self, msg)
 
 class LimeRetriesExceededError(MargaritaShotgunError):
     """
