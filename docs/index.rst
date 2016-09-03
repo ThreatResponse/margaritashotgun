@@ -12,6 +12,7 @@ Python Remote Memory Aquisition
    installing
    user_guide
    reference_guide
+   architecture
    development
    about
 
