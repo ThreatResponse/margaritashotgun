@@ -10,7 +10,7 @@ Currently only linux is a supported platform.  Running on OSX or Windows may be 
 
 While margaritashotgun is written purely in python, some of the libraries used require additional system packages.
 
-Fedora / REHL Distributions
+Fedora / RHEL Distributions
 ---------------------------
 
 * python-devel (2.X or 3.X)
