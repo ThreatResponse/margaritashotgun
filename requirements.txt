@@ -1,10 +1,10 @@
 pytest
 pytest-cov
 mock
-boto3
-paramiko
-pyyaml
-s3fs
+boto3>=1.3.0
+paramiko>=1.16.0
+pyyaml>=3.11
+s3fs>=0.0.2
 progressbar-latest
 enum34
 requests
