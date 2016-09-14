@@ -29,7 +29,10 @@ Debian Distributions
 Install From PyPi
 *****************
 
-Margaritashotgun is not currently listed in PyPi, while we work on that install via one of the methods below.
+.. code-block:: bash
+
+   $ pip install margaritashotgun
+
 
 Installing From Github
 **********************
