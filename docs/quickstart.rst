@@ -30,7 +30,7 @@ Capture Multiple Machines
 
 Run margaritashotgun with a configuration file like ``parallel_config.yml.example``
 
-.. code-block:: bah
+.. code-block:: bash
 
     aws:
         bucket: memory_dump_example
@@ -57,7 +57,9 @@ Run margaritashotgun with a configuration file like ``parallel_config.yml.exampl
           module:   lime-3.13.0-74-generic.ko
     workers: 2
 
-Here parallelism is limited to 2 workers.
+.. note::
+
+   In this example parallelism is limited to 2 workers.
 
 Run the capture with:
 

@@ -3,65 +3,56 @@
 User Guide
 ==========
 
-.. contents::
-
 Command Line
 ************
 
-Common Examples
----------------
+.. note::
 
-See :doc:`the quickstart <quickstart>` for common examples.
+   See the :doc:`quickstart <quickstart>` for common examples.
 
 Usage
 -----
 
-``margaritashotgun`` has man configuration flags which are outlined in detail below.
+Run ``margaritashotgun -h`` at the command line, detailed information on flags is below.
 
-.. code-block:: bash
+Quick Reference
+---------------
 
-   $ margaritashotgun -h
-   usage: margaritashotgun [-h] (-c CONFIG | -s SERVER) [-P PORT] [-u USERNAME]
-                           [-m MODULE] [-p PASSWORD] [-k KEY] [-f FILENAME]
-                           [--repository] [--repository-url REPOSITORY_URL]
-                           [-w WORKERS] [-v] [-b BUCKET | -o OUTPUT_DIR]
-                           [-d LOG_DIR] [--log_prefix LOG_PREFIX]
-   
-   Remote memory aquisition wrapper for LiME
-   
-   optional arguments:
-     -h, --help            show this help message and exit
-     -c CONFIG, --config CONFIG
-                           path to config.yml
-     -s SERVER, --server SERVER
-                           hostname or ip of target server
-     -b BUCKET, --bucket BUCKET
-                           memory dump output bucket
-     -o OUTPUT_DIR, --output_dir OUTPUT_DIR
-                           memory dump output directory
-   
-     -P PORT, --port PORT  ssh port on remote server
-     -u USERNAME, --username USERNAME
-                           username for ssh connection
-     -m MODULE, --module MODULE
-                           path to kernel lime kernel module
-     -p PASSWORD, --password PASSWORD
-                           password for user or encrypted keyfile
-     -k KEY, --key KEY     path to rsa key for ssh connection
-     -f FILENAME, --filename FILENAME
-                           memory dump filename
-     --repository          enable automatic kernel module downloads
-     --repository-url REPOSITORY_URL
-                           repository url
-     -w WORKERS, --workers WORKERS
-                           number of workers to run in parallel,default: auto
-                           acceptable values are(INTEGER | "auto")
-     -v, --verbose         log debug messages
-   
-     -d LOG_DIR, --log_dir LOG_DIR
-                           log directory
-     --log_prefix LOG_PREFIX
-                          log file prefix
++--------+----------------------+---------------------+----------------------------------------+
+| Flag   | Alternate Flag       | Use                 | Notes                                  |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-c`` | ``--config``         | path to config file | See the **Configuration File** section |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-s`` | ``--server``         | ip of remote server | DNS records may also be used           |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-b`` | ``--bucket``         | output S3 bucket    | Incommpatible with ``-o``              |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-o`` | ``--output_dir``     | local output folder | Incompatible with ``-b``               |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-p`` | ``--port``           | ssh port            | ``22`` is used unless specified        |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-u`` | ``--username``       | ssh username        | Username for ssh authentication        |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-m`` | ``--module``         | lime kernel module  | Required if no repository is enabled   |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-p`` | ``--password``       | ssh password        | Unlockes RSA key when used with ``-k`` |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-k`` | ``--key``            | RSA Key             | Unlocked via ``-p`` if supplied        |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-f`` | ``--filename``       | output file         |                                        |
++--------+----------------------+---------------------+----------------------------------------+
+|        | ``--repository``     | enable kernel repo  | Default state is disabled              |
++--------+----------------------+---------------------+----------------------------------------+
+|        | ``--repository-url`` | custom repo url     | Defaults to threat response modules    |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-w`` | ``--workers``        | worker count        | Constrains parallel captures           |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-v`` | ``--verbose``        | log debug messages  |                                        |
++--------+----------------------+---------------------+----------------------------------------+
+| ``-d`` | ``--log_dir``        | log directory       |                                        |
++--------+----------------------+---------------------+----------------------------------------+
+|        | ``--log_prefix``     | log file prefix     |                                        |
++--------+----------------------+---------------------+----------------------------------------+
 
 Config
 ------
@@ -155,7 +146,6 @@ Log_Prefix
 ----------
 
 The ``--log_prefix`` flag allows a custom case number to be prepended onto log files for easy identification.
-
 
 Configuration File
 ******************

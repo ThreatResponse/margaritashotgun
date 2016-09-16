@@ -16,9 +16,11 @@ For more information see the `user guide <https://margaritashotgun.readthedocs.i
 Installation
 ~~~~~~~~~~~~
 
-``pip install git+ssh://git@github.com/ThreatResponse/margaritashotgun.git@master``
+``pip install margaritashotgun``
 
-Or see `installing <https://margaritashotgun.readthedocs.io/en/latest/installing.html>`__.
+Margarita Shotgun is supported on common linux distributions, for other operating systems use the `python docker container <https://hub.docker.com/_/python/>`__ and follow our `installation guide <https://margaritashotgun.readthedocs.io/en/latest/installing.html#install-with-docker>`__.
+
+See `installing <https://margaritashotgun.readthedocs.io/en/latest/installing.html>`__ for a list of required system packages.
 
 Capture A Single Machine
 ************************
@@ -46,7 +48,7 @@ Capture Multiple Machines
 
 Run margaritashotgun with a configuration file like ``parallel_config.yml.example``
 
-.. code-block:: bah
+.. code-block:: bash
 
     aws:
         bucket: memory_dump_example
