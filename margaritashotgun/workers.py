@@ -28,11 +28,11 @@ class Workers():
             log_dir = conf[0]['logging']['log_dir']
             if log_dir[-1:] != '/':
                 log_dir = log_dir + '/'
-        except KeyError:
+        except TypeError:
             log_dir = ""
         try:
             log_prefix = conf[0]['logging']['prefix'] + "-"
-        except KeyError:
+        except TypeError:
             log_prefix = ""
 
         self.log_file = "{}{}memory-capture.log".format(
