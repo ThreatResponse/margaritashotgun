@@ -117,7 +117,7 @@ Repository
 ----------
 
 The ``--repository`` flag enables automatic kernel module resolution via the repository configured with ``--repository-url``.
-Margaritashotgun will not query any repositories unless explicitly enabled with the ``--repository`` flag.
+Margarita Shotgun will not query any repositories unless explicitly enabled with the ``--repository`` flag.
 
 Repository_Url
 --------------
@@ -156,14 +156,39 @@ More documentation about the configuration file format is in the works.
 Managing AWS Credentials
 ************************
 
-Margaritashotgun does not support explicitly declaring aws credentials.  Currently the only way to interact with S3 is by configuring an `aws profile <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`__.
+Margarita Shotgun does not support explicitly declaring aws credentials.  Currently the only way to interact with S3 is by configuring an `aws profile <https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html>`__.
 A feature is planned to allow selecting a profile other than the ``default`` profile.  Until that feature is completed the ``default`` profile must be used.
+
+
+Recommended IAM Policy
+**************************
+
+Margarita Shotgun only requires PutObject on a specified bucket.
+
+Example
+-------
+
+.. code-block:: json
+
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "s3:PutObject"
+                ],
+                "Resource": "arn:aws:s3:::member-berries/*"
+            }
+        ]
+    }
+
 
 Wrapping Margarita Shotgun
 **************************
 
 Margarita Shotgun can be driven by another program when included as a python module.
-The configuration object passed to the margaritashotgun client must have the exact structure of the configuration file outlined above.
+The configuration object passed to the margaritashotgun client must have the exact structure of the configuration file outlined below.
 
 Example
 -------
