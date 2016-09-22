@@ -188,7 +188,7 @@ Wrapping Margarita Shotgun
 **************************
 
 Margarita Shotgun can be driven by another program when included as a python module.
-The configuration object passed to the margaritashotgun client must have the exact structure of the configuration file outlined below.
+The configuration object passed to the margaritashotgun client must have the exact structure of the configuration file outlined above.
 
 Example
 -------
