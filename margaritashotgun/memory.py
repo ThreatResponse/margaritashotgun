@@ -222,6 +222,7 @@ class Memory():
             try:
                 self.bar.update(self.transfered)
             except Exception as e:
+                # This is just a math problem, doesn't effect anything.
                 logger.warn("{0}: {1}, {2} exceeds memsize {3}".format(
                                  self.remote_addr,
                                  e,
