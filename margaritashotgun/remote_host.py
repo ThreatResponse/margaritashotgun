@@ -3,6 +3,7 @@ import logging
 import logging.handlers
 import random
 import time
+from datetime import datetime
 from margaritashotgun.exceptions import *
 from margaritashotgun.auth import Auth
 from margaritashotgun.remote_shell import RemoteShell, Commands
@@ -52,7 +53,9 @@ def process(conf):
         dest = OutputDestinations.local
 
     if filename is None:
-        filename = "{0}-mem.lime".format(remote_addr)
+        tm = int(time.time())
+        dt = datetime.utcfromtimestamp(tm).isoformat()
+        filename = "{0}-{1}-mem.lime".format(remote_addr, dt)
 
     try:
         host = Host()
