@@ -13,10 +13,16 @@ logger = logging.getLogger(__name__)
 
 class Repository():
     """
+    Lime-compiler repository client
+    https://github.com/ThreatResponse/lime-compiler
     """
 
     def __init__(self, url, gpg_verify):
         """
+        :type url: str
+        :param url: repository url
+        :type gpg_verify: bool
+        :param gpg_verify: enable/disable gpg signature verification
         """
         self.url = url.rstrip('/')
         self.gpg_verify = gpg_verify
@@ -25,6 +31,12 @@ class Repository():
 
     def fetch(self, kernel_version, manifest_type):
         """
+        Search repository for kernel module matching kernel_version
+
+        :type kernel_version: str
+        :param kernel_version: kernel version to search repository on
+        :type manifest_type: str
+        :param manifest_type: kernel module manifest to search on
         """
         metadata = self.get_metadata()
         logger.debug("parsed metadata: {0}".format(metadata))
@@ -41,6 +53,7 @@ class Repository():
 
     def get_metadata(self):
         """
+        Fetch repository repomd.xml file
         """
         metadata_path = "{}/{}/{}".format(self.url,
                                           self.metadata_dir,
@@ -71,6 +84,12 @@ class Repository():
         return self.parse_metadata(raw_metadata)
 
     def parse_metadata(self, metadata_xml):
+        """
+        Parse repomd.xml file
+
+        :type metadata_xml: str
+        :param metadata_xml: raw xml representation of repomd.xml
+        """
         try:
             metadata = dict()
             mdata = untangle.parse(metadata_xml).metadata
@@ -103,6 +122,10 @@ class Repository():
 
     def get_manifest(self, metadata):
         """
+        Get latest manifest as specified in repomd.xml
+
+        :type metadata: dict
+        :param metadata: dictionary representation of repomd.xml
         """
         manifest_path = "{0}/{1}".format(self.url, metadata['location'])
         req = requests.get(manifest_path, stream=True)
@@ -119,6 +142,10 @@ class Repository():
 
     def unzip_manifest(self, raw_manifest):
         """
+        Decompress gzip encoded manifest
+
+        :type raw_manifest: str
+        :param raw_manifest: compressed gzip manifest file content
         """
         buf = StringIO(raw_manifest)
         f = gzip.GzipFile(fileobj=buf)
@@ -128,6 +155,10 @@ class Repository():
 
     def parse_manifest(self, manifest_xml):
         """
+        Parse manifest xml file
+
+        :type manifest_xml: str
+        :param manifest_xml: raw xml content of manifest file
         """
 
         manifest = dict()
@@ -153,7 +184,10 @@ class Repository():
 
     def fetch_module(self, module):
         """
-        :type module:
+        Download and verify kernel module
+
+        :type module: str
+        :param module: kernel module path
         """
         tm = int(time.time())
         datestamp = datetime.utcfromtimestamp(tm).isoformat()
@@ -170,6 +204,14 @@ class Repository():
 
     def verify_module(self, filename, module, verify_signature):
         """
+        Verify kernel module checksum and signature
+
+        :type filename: str
+        :param filename: downloaded kernel module path
+        :type module: dict
+        :param module: kernel module metadata
+        :type verify_signature: bool
+        :param verify_signature: enable/disable signature verification
         """
         with open(filename, 'rb') as f:
             module_data = f.read()
@@ -180,6 +222,16 @@ class Repository():
 
 
     def verify_checksum(self, data, checksum, filename):
+        """
+        Verify sha256 checksum vs calculated checksum
+
+        :type data: str
+        :param data: data used to calculate checksum
+        :type checksum: str
+        :param checksum: expected checksum of data
+        :type filename: str
+        :param checksum: original filename
+        """
         calculated_checksum = hashlib.sha256(data).hexdigest()
         logger.debug("calculated checksum {0} for {1}".format(calculated_checksum,
                                                               filename))
@@ -190,5 +242,7 @@ class Repository():
                                                         calculated_checksum)))
 
     def verify_signature(self):
+        """
+        """
         # TODO: verify gpg signature
         return True
