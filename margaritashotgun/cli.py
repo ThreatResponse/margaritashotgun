@@ -12,7 +12,7 @@ aws_allowed_keys = ["bucket"]
 host_allowed_keys = ["addr", "port", "username", "password",
                      "module", "key", "filename"]
 logging_allowed_keys = ["log_dir", "prefix"]
-repository_allowed_keys = ["enabled", "url"]
+repository_allowed_keys = ["enabled", "url", "gpg_verify", "manifest"]
 default_host_config = dict(zip(host_allowed_keys,
                                [None]*len(host_allowed_keys)))
 default_config = {"aws": {"bucket": None},
@@ -23,7 +23,9 @@ default_config = {"aws": {"bucket": None},
                       "prefix": None},
                   "repository": {
                       "enabled": False,
-                      "url": "https://threatresponse-lime-modules.s3.amazonaws.com/"
+                      "url": "https://threatresponse-lime-modules.s3.amazonaws.com/",
+                      "gpg_verify": True,
+                      "manifest": "primary"
                   }}
 
 
@@ -63,13 +65,20 @@ class Cli():
         opts.add_argument('--repository', action='store_true',
                           help='enable automatic kernel module downloads')
         opts.add_argument('--repository-url',
-                          help='repository url')
-        opts.add_argument('-w', '--workers', default=1,
+                          help='kernel module repository url')
+        opts.add_argument('--repository-manifest',
+                          help='specify alternate repository manifest')
+        opts.add_argument('--gpg-no-verify', dest='gpg_verify',
+                          action='store_false',
+                          help='skip lime module gpg signature check')
+        opts.add_argument('--workers', default=1,
                           help=('number of workers to run in parallel,'
                                 'default: auto acceptable values are'
                                 '(INTEGER | "auto")'))
         opts.add_argument('-v', '--verbose', action='store_true',
                           help='log debug messages')
+        opts.set_defaults(repository_manifest='primary')
+        opts.set_defaults(gpg_verify=True)
 
         output = parser.add_mutually_exclusive_group(required=False)
         output.add_argument('-b', '--bucket',
@@ -159,7 +168,9 @@ class Cli():
                                         prefix=arguments.log_prefix),
                            workers=arguments.workers,
                            repository=dict(enabled=arguments.repository,
-                                           url=url))
+                                           url=url,
+                                           manifest=arguments.repository_manifest,
+                                           gpg_verify=arguments.gpg_verify))
 
         if arguments.server is not None:
             host = dict(zip(host_allowed_keys,
