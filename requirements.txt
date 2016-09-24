@@ -8,5 +8,5 @@ s3fs>=0.0.2
 progressbar-latest
 enum34
 requests
-xmltodict
+untangle
 logutils
