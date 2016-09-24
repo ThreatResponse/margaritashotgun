@@ -41,6 +41,8 @@ def process(conf):
 
     repository_enabled = conf['repository']['enabled']
     repository_url = conf['repository']['url']
+    repository_manifest = conf['repository']['manifest']
+    repository_gpg_verify = conf['repository']['gpg_verify']
 
     queue_handler = QueueHandler(log_queue)
     logger = logging.getLogger('margaritashotgun')

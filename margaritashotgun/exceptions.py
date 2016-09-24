@@ -46,6 +46,17 @@ class SSHConnectionError(MargaritaShotgunError):
         )
         MargaritaShotgunError.__init__(self, msg)
 
+class RepositoryError(MargaritaShotgunError):
+    """
+    Raised when malformed repository metadata is found
+    """
+    def __init__(self, metadata_url, reason):
+        msg = (
+            "Error parsing repository metadata"
+            " {0} {1}".format(metadata_url, reason)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
 class KernelModuleNotFoundError(MargaritaShotgunError):
     """
     Raised when no kernel module is provided and a suitable module
