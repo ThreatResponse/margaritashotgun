@@ -163,7 +163,7 @@ class Cli():
 
         if arguments.server is not None:
             host = dict(zip(host_allowed_keys,
-                            [arguments.server, arguments.port,
+                            [arguments.server, int(arguments.port),
                              arguments.username, arguments.password,
                              module, key, arguments.filename]))
             args_config['hosts'] = []

@@ -136,7 +136,7 @@ class Host():
         if port is None:
             self.remote_port = 22
         else:
-            self.remote_port = port
+            self.remote_port = int(port)
         auth = Auth(username=username, password=password, key=key)
         self.tunnel.connect(auth, address, self.remote_port)
         self.shell.connect(auth, address, self.remote_port)

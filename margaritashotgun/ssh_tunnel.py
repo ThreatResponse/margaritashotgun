@@ -21,6 +21,7 @@ class SSHTunnel():
     def __init__(self):
         self.transport = None
         self.forward = None
+        self.local_port = None
 
     # TODO raise exceptions if address==None
     def connect(self, auth, address, port, hostkey=None):
@@ -112,10 +113,12 @@ class SSHTunnel():
         """
         Cleanup resources used during execution
         """
-        logger.debug(("Stopping ssh tunnel {0}:{1}:{2} for "
-                      "{3}@{4}".format(self.local_port,
-                                       self.remote_address, self.remote_port,
-                                       self.username, self.address)))
+        if self.local_port is not None:
+            logger.debug(("Stopping ssh tunnel {0}:{1}:{2} for "
+                          "{3}@{4}".format(self.local_port,
+                                           self.remote_address,
+                                           self.remote_port,
+                                           self.username, self.address)))
         if self.forward is not None:
             self.forward.stop()
             self.forward.join()
