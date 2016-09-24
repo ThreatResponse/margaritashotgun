@@ -35,7 +35,7 @@ class Repository():
             logger.debug("found module {0}".format(module))
         except KeyError:
             raise KernelModuleNotFoundError(kernel_version, self.url)
-        path = self.fetch_module(module, verify_signature = self.gpg_verify)
+        path = self.fetch_module(module)
 
         return path
 
@@ -151,13 +151,13 @@ class Repository():
 
         return manifest
 
-    def fetch_module(self, module, filename=None, verify_signature=False):
+    def fetch_module(self, module):
         """
+        :type module:
         """
-        if filename is None:
-            tm = int(time.time())
-            datestamp = datetime.utcfromtimestamp(tm).isoformat()
-            filename = "lime-{0}-{1}.ko".format(datestamp, module['version'])
+        tm = int(time.time())
+        datestamp = datetime.utcfromtimestamp(tm).isoformat()
+        filename = "lime-{0}-{1}.ko".format(datestamp, module['version'])
         url = "{0}/{1}".format(self.url, module['location'])
         logger.info("downloading {0} as {1}".format(url, filename))
         req = requests.get(url, stream=True)
@@ -165,7 +165,7 @@ class Repository():
         with open(filename, 'wb') as f:
             f.write(req.raw.read())
 
-        self.verify_module(filename, module, verify_signature)
+        self.verify_module(filename, module, self.gpg_verify)
         return filename
 
     def verify_module(self, filename, module, verify_signature):
