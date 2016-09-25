@@ -1,6 +1,8 @@
+import gnupg
 import gzip
 import hashlib
 import logging
+import os
 import requests
 import time
 import untangle
@@ -28,6 +30,21 @@ class Repository():
         self.gpg_verify = gpg_verify
         self.metadata_dir = 'repodata'
         self.metadata_file = 'repomd.xml'
+        self.repo_signing_key = 'REPO_SIGNING_KEY.asc'
+
+        self.gpg = None
+        self.key_path = None
+        self.key_info = None
+        self.raw_key = None
+
+    def init_gpg(self):
+        """
+        Initialize gpg object and check if repository signing key is trusted
+        """
+        if self.gpg_verify:
+            logger.debug("gpg verification enabled, initializing gpg")
+            gpg_home = os.path.expanduser('~/.gnupg')
+            self.gpg = gnupg.GPG(gnupghome=gpg_home)
 
     def fetch(self, kernel_version, manifest_type):
         """
