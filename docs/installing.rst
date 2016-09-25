@@ -68,7 +68,7 @@ Local Build and Install
 
    $ git clone https://github.com/ThreatResponse/margaritashotgun.git
    $ cd margaritashotgun
-   $ python setup.py
+   $ python setup.py sdist
    $ pip install dist/margarita_shotgun-*.tar.gz
    $ margaritashotgun -h
 

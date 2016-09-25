@@ -18,41 +18,45 @@ Run ``margaritashotgun -h`` at the command line, detailed information on flags i
 Quick Reference
 ---------------
 
-+--------+----------------------+---------------------+----------------------------------------+
-| Flag   | Alternate Flag       | Use                 | Notes                                  |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-c`` | ``--config``         | path to config file | See the **Configuration File** section |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-s`` | ``--server``         | ip of remote server | DNS records may also be used           |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-b`` | ``--bucket``         | output S3 bucket    | Incommpatible with ``-o``              |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-o`` | ``--output_dir``     | local output folder | Incompatible with ``-b``               |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-p`` | ``--port``           | ssh port            | ``22`` is used unless specified        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-u`` | ``--username``       | ssh username        | Username for ssh authentication        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-m`` | ``--module``         | lime kernel module  | Required if no repository is enabled   |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-p`` | ``--password``       | ssh password        | Unlockes RSA key when used with ``-k`` |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-k`` | ``--key``            | RSA Key             | Unlocked via ``-p`` if supplied        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-f`` | ``--filename``       | output file         |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--repository``     | enable kernel repo  | Default state is disabled              |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--repository-url`` | custom repo url     | Defaults to threat response modules    |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-w`` | ``--workers``        | worker count        | Constrains parallel captures           |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-v`` | ``--verbose``        | log debug messages  |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-d`` | ``--log_dir``        | log directory       |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--log_prefix``     | log file prefix     |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
++--------+---------------------------+--------------------------+----------------------------------------+
+| Flag   | Alternate Flag            | Use                      | Notes                                  |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-c`` | ``--config``              | path to config file      | See the **Configuration File** section |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-s`` | ``--server``              | ip of remote server      | DNS records may also be used           |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-b`` | ``--bucket``              | output S3 bucket         | Incommpatible with ``-o``              |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-o`` | ``--output_dir``          | local output folder      | Incompatible with ``-b``               |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-p`` | ``--port``                | ssh port                 | ``22`` is used unless specified        |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-u`` | ``--username``            | ssh username             | Username for ssh authentication        |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-m`` | ``--module``              | lime kernel module       | Required if no repository is enabled   |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-p`` | ``--password``            | ssh password             | Unlockes RSA key when used with ``-k`` |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-k`` | ``--key``                 | RSA Key                  | Unlocked via ``-p`` if supplied        |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-f`` | ``--filename``            | output file              |                                        |
++--------+---------------------------+--------------------------+----------------------------------------+
+|        | ``--repository``          | enable kernel repo       | Default state is disabled              |
++--------+---------------------------+--------------------------+----------------------------------------+
+|        | ``--repository-url``      | custom repo url          | Defaults to threat response modules    |
++--------+---------------------------+--------------------------+----------------------------------------+
+|        | ``--repository-manifest`` | custom repo url          | Defaults to "primary"                  |
++--------+---------------------------+--------------------------+----------------------------------------+
+|        | ``--gpg-no-verify``       | disable signature checks |                                        |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-w`` | ``--workers``             | worker count             | Constrains parallel captures           |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-v`` | ``--verbose``             | log debug messages       |                                        |
++--------+---------------------------+--------------------------+----------------------------------------+
+| ``-d`` | ``--log_dir``             | log directory            |                                        |
++--------+---------------------------+--------------------------+----------------------------------------+
+|        | ``--log_prefix``          | log file prefix          |                                        |
++--------+---------------------------+--------------------------+----------------------------------------+
 
 Config
 ------
@@ -123,6 +127,16 @@ Repository_Url
 --------------
 
 The ``--repository-url`` flag specifies where to search for kernel modules.  The default public repository provided by `Threat Response <http://www.threatresponse.cloud/>`__ is availible at ``https://threatresponse-lime-modules.s3.amazonaws.com``
+
+Repository-manifest
+-------------------
+
+The ``--repository-manifest`` flag specifies alternate kernel module manifests in the remote repository configured by ``--repository-url``.  For more information on repository structure and manifests see the :doc:`architecture <architecture>` page or `lime-compiler repository <https://github.com/threatresponse/lime-compiler>`__.
+
+Gpg-no-verify
+-------------
+
+The ``--gpg-no-verify`` flag disables gpg verification of kernel modules downloaded from a remote repository.
 
 Workers
 -------
