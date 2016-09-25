@@ -299,8 +299,10 @@ class Repository():
         self.verify_checksum(module_data, module['checksum'],
                              module['location'])
 
-        #TODO: verify gpg signature
-
+        if self.gpg_verify:
+            signature_url = "{0}/{1}".format(self.url, module['signature'])
+            file_url = "{0}/{1}".format(self.url, module['location'])
+            self.verify_file_signature(signature_url, file_url, filename)
 
     def verify_checksum(self, data, checksum, filename):
         """
@@ -350,5 +352,30 @@ class Repository():
         if verified.valid is True:
             logger.debug("verified {0} against {1}".format(data_url,
                                                            signature_url))
+        else:
+            raise RepositorySignatureError(file_url, signature_url)
+
+    def verify_file_signature(self, signature_url, file_url, filename):
+        """
+        Verify a local file against it's remote signature
+
+        :type signature_url: str
+        :param signature_url: remote path to signature for file_url
+        :type file_url: str
+        :param file_url: url from which file at filename was fetched
+        :type filename: str
+        :param filename: filename of local file downloaded from file_url
+        """
+
+        req = requests.get(signature_url, stream=True)
+        if req.status_code is 200:
+            sigfile = req.raw
+        else:
+            raise RepositoryMissingSignatureError(signature_url)
+
+        verified = self.gpg.verify_file(sigfile, filename)
+
+        if verified.valid is True:
+            logger.debug("verified {0} against {1}".format(filename, signature_url))
         else:
             raise RepositorySignatureError(file_url, signature_url)
