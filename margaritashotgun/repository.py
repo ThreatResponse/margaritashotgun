@@ -89,6 +89,35 @@ class Repository():
             raise RepositoryUntrustedSigningKeyError(repo_key_url,
                                                      self.key_info['fingerprint'])
 
+    def prompt_for_install(self):
+        """
+        Prompt user to install untrusted repo signing key
+        """
+        print(self.key_info)
+        repo_key_url = "{0}/{1}".format(self.url, self.repo_signing_key)
+        print(("warning: Repository key untrusted \n"
+               "Importing GPG key 0x{0}:\n"
+               "  Userid: \"{1}\"\n"
+               "  From  : {2}".format(self.key_info['fingerprint'],
+                                      self.key_info['uids'][0],
+                                      repo_key_url)))
+        response = prompt(u'Is this ok: [y/N]')
+        if response == 'y':
+            self.install_key(self.raw_key)
+            return True
+        else:
+            return False
+
+    def install_key(self, key_data):
+        """
+        Install untrusted repo signing key
+        """
+        logger.info(("importing repository signing key {0} "
+                     "{1}".format(self.key_info['fingerprint'],
+                                  self.key_info['uids'][0])))
+        import_result = self.gpg.import_keys(key_data)
+        logger.debug("import results: {0}".format(import_result.results))
+
     def fetch(self, kernel_version, manifest_type):
         """
         Search repository for kernel module matching kernel_version
