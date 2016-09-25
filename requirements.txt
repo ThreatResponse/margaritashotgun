@@ -10,3 +10,4 @@ enum34
 requests
 untangle
 logutils
+python-gnupg

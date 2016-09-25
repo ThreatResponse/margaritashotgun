@@ -9,6 +9,7 @@ import untangle
 from datetime import datetime
 from StringIO import StringIO
 from margaritashotgun.exceptions import *
+from prompt_toolkit import prompt
 
 logger = logging.getLogger(__name__)
 
