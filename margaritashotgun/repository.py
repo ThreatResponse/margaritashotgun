@@ -47,6 +47,7 @@ class Repository():
             self.gpg = gnupg.GPG(gnupghome=gpg_home)
             self.key_path, self.key_info = self.get_signing_key()
             logger.debug("{0} {1}".format(self.key_path, self.key_info))
+            self.check_signing_key()
 
     def get_signing_key(self):
         """
@@ -67,6 +68,25 @@ class Repository():
         else:
             raise RepositoryMissingSigningKeyError(repo_key_path)
         return (tmp_path, key_info)
+
+    def check_signing_key(self):
+        """
+        Check that repo signing key is trusted by gpg keychain
+        """
+        user_keys = self.gpg.list_keys()
+        if len(user_keys) > 0:
+            trusted = False
+            for key in user_keys:
+                if key['fingerprint'] == self.key_info['fingerprint']:
+                    trusted = True
+                    logger.debug(("repo signing key trusted in user keyring, "
+                                  "fingerprint {0}".format(key['fingerprint'])))
+        else:
+            trusted = False
+        if trusted is False:
+            repo_key_url = "{0}/{1}".format(self.url, self.repo_signing_key)
+            raise RepositoryUntrustedSigningKeyError(repo_key_url,
+                                                     self.key_info['fingerprint'])
 
     def fetch(self, kernel_version, manifest_type):
         """
