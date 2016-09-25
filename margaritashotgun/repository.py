@@ -45,6 +45,28 @@ class Repository():
             logger.debug("gpg verification enabled, initializing gpg")
             gpg_home = os.path.expanduser('~/.gnupg')
             self.gpg = gnupg.GPG(gnupghome=gpg_home)
+            self.key_path, self.key_info = self.get_signing_key()
+            logger.debug("{0} {1}".format(self.key_path, self.key_info))
+
+    def get_signing_key(self):
+        """
+        Download a local copy of repo signing key and generate key metadata
+        """
+        tmp_path = "/tmp/{0}".format(self.repo_signing_key)
+        repo_key_path = "{0}/{1}".format(self.url, self.repo_signing_key)
+        req = requests.get(repo_key_path)
+        if req.status_code is 200:
+            logger.debug(("found repository signing key at "
+                         "{0}".format(repo_key_path)))
+            self.raw_key = req.content
+            with open(tmp_path, 'wb') as f:
+                f.write(self.raw_key)
+            key_info = self.gpg.scan_keys(tmp_path)
+            # we only scan one key, return a single key_info
+            key_info = key_info[0]
+        else:
+            raise RepositoryMissingSigningKeyError(repo_key_path)
+        return (tmp_path, key_info)
 
     def fetch(self, kernel_version, manifest_type):
         """
