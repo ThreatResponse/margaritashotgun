@@ -62,6 +62,7 @@ def process(conf):
             kernel_version = host.kernel_version()
             if repository_enabled:
                 repo = Repository(repository_url, repository_gpg_verify)
+                repo.init_gpg()
                 lime_module = repo.fetch(kernel_version, repository_manifest)
                 host.upload_module(lime_module)
             else:
