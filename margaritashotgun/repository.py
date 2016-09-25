@@ -158,17 +158,9 @@ class Repository():
             raise RepositoryError(metadata_path, ("status code not 200: "
                                                   "{}".format(req.status_code)))
 
-        # load metadata signature
         if self.gpg_verify:
-            req = requests.get(metadata_sig_path)
-            if req.status_code is 200:
-                signature = req.content
-            else:
-                raise RepositoryError(metadata_sig_path,
-                                      ("status code not 200: "
-                                       "{}".format(req.status_code)))
-
-        # TODO: verify gpg signature
+            self.verify_data_signature(metadata_sig_path, metadata_path,
+                                       raw_metadata)
 
         return self.parse_metadata(raw_metadata)
 
@@ -330,8 +322,33 @@ class Repository():
                                    "{0} got {1}".format(checksum,
                                                         calculated_checksum)))
 
-    def verify_signature(self):
+    def verify_data_signature(self, signature_url, data_url, data):
         """
+        Verify data against it's remote signature
+
+        :type signature_url: str
+        :param signature_url: remote path to signature for data_url
+        :type data_url: str
+        :param data_url: url from which data was fetched
+        :type data: str
+        :param data: content of remote file at file_url
         """
-        # TODO: verify gpg signature
-        return True
+
+        req = requests.get(signature_url)
+        if req.status_code is 200:
+            tm = int(time.time())
+            datestamp = datetime.utcfromtimestamp(tm).isoformat()
+            sigfile = "repo-{0}-tmp.sig".format(datestamp)
+            logger.debug("writing {0} to {1}".format(signature_url, sigfile))
+            with open(sigfile, 'wb') as f:
+                f.write(req.content)
+        else:
+            raise RepositoryMissingSignatureError(signature_url)
+
+        verified = self.gpg.verify_data(sigfile, data)
+
+        if verified.valid is True:
+            logger.debug("verified {0} against {1}".format(data_url,
+                                                           signature_url))
+        else:
+            raise RepositorySignatureError(file_url, signature_url)
