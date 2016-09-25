@@ -57,6 +57,50 @@ class RepositoryError(MargaritaShotgunError):
         )
         MargaritaShotgunError.__init__(self, msg)
 
+class RepositoryMissingSigningKeyError(MargaritaShotgunError):
+    """
+    Raised when signing public key is missing from repository
+    """
+    def __init__(self, url):
+        msg = (
+            "Repository missing signing key, expected signing key "
+            "at {0}, contact the repository maintainer or disable "
+            "gpg verification with --gpg-no-verify".format(url)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositoryMissingSignatureError(MargaritaShotgunError):
+    """
+    Raised when a detached signature is missing in remote repository"
+    """
+    def __init__(self, signature_url):
+        msg = (
+            "Repository missing signature {0}".format(signature_url)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositoryUntrustedSigningKeyError(MargaritaShotgunError):
+    """
+    Raised when repository signing key is not trusted
+    """
+    def __init__(self, url, fingerprint):
+        msg = (
+            "Repository signing key found at {0} is not trusted on the "
+            "local system, fingerprint: {1}".format(url, fingerprint)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositorySignatureError(MargaritaShotgunError):
+    """
+    Raised when signature verification fails
+    """
+    def __init__(self, url, signature_url):
+        msg = (
+            "Signature verification failed for {0} with signature "
+            "{1}".format(url, signature_url)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
 class KernelModuleNotFoundError(MargaritaShotgunError):
     """
     Raised when no kernel module is provided and a suitable module
