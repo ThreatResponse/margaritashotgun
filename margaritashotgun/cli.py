@@ -76,8 +76,6 @@ class Cli():
         output = parser.add_mutually_exclusive_group(required=False)
         output.add_argument('-b', '--bucket',
                             help='memory dump output bucket')
-        output.add_argument('-o', '--output_dir',
-                            help='memory dump output directory')
 
         log = parser.add_argument_group()
         log.add_argument('-d', '--log_dir',
@@ -148,8 +146,7 @@ class Cli():
         module, key, config_path = self.check_file_paths(arguments.module,
                                                          arguments.key,
                                                          arguments.config)
-        output_dir, log_dir = self.check_directory_paths(arguments.output_dir,
-                                                         arguments.log_dir)
+        log_dir = self.check_directory_paths(arguments.log_dir)
 
         if arguments.repository_url is None:
             url = default_config['repository']['url']
