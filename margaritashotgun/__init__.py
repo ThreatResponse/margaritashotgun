@@ -2,7 +2,7 @@ import logging
 from margaritashotgun.client import Client
 
 __author__ = 'Joel Ferrier'
-__version__ = '0.2.0'
+__version__ = '0.3.1'
 
 
 def set_stream_logger(name='margaritashotgun', level=logging.INFO,
