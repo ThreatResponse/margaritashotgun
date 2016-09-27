@@ -47,6 +47,8 @@ class Cli():
         root.add_argument('-c', '--config', help='path to config.yml')
         root.add_argument('-s', '--server',
                           help='hostname or ip of target server')
+        root.add_argument('--version', action='store_true',
+                          help='show version')
 
         opts = parser.add_argument_group()
         opts.add_argument('-P', '--port', help='ssh port on remote server')
