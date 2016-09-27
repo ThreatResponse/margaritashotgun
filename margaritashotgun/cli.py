@@ -45,18 +45,16 @@ class Cli():
 
         root = parser.add_mutually_exclusive_group(required=True)
         root.add_argument('-c', '--config', help='path to config.yml')
-        root.add_argument('-s', '--server',
+        root.add_argument('--server',
                           help='hostname or ip of target server')
         root.add_argument('--version', action='store_true',
                           help='show version')
 
         opts = parser.add_argument_group()
-        opts.add_argument('-P', '--port', help='ssh port on remote server')
-        opts.add_argument('-u', '--username',
-                          help='username for ssh connection')
-        opts.add_argument('-m', '--module',
-                          help='path to kernel lime kernel module')
-        opts.add_argument('-p', '--password',
+        opts.add_argument('--port', help='ssh port on remote server')
+        opts.add_argument('--username', help='username for ssh connection')
+        opts.add_argument('-m', '--module', help='path to lime kernel module')
+        opts.add_argument('--password',
                           help='password for user or encrypted keyfile')
         opts.add_argument('-k', '--key',
                           help='path to rsa key for ssh connection')
@@ -70,7 +68,7 @@ class Cli():
                           help=('number of workers to run in parallel,'
                                 'default: auto acceptable values are'
                                 '(INTEGER | "auto")'))
-        opts.add_argument('-v', '--verbose', action='store_true',
+        opts.add_argument('--verbose', action='store_true',
                           help='log debug messages')
 
         output = parser.add_mutually_exclusive_group(required=False)
@@ -78,10 +76,8 @@ class Cli():
                             help='memory dump output bucket')
 
         log = parser.add_argument_group()
-        log.add_argument('-d', '--log_dir',
-                         help='log directory')
-        log.add_argument('--log_prefix',
-                         help='log file prefix')
+        log.add_argument('--log-dir', help='log directory')
+        log.add_argument('--log-prefix', help='log file prefix')
         return parser.parse_args(args)
 
     def configure(self, arguments=None, config=None):
