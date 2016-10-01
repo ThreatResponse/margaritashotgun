@@ -5,7 +5,6 @@ from paramiko import AuthenticationException, SSHException
 import select
 import socket
 import threading
-from margaritashotgun.auth import AuthMethods
 from margaritashotgun.exceptions import *
 
 try:
@@ -23,8 +22,7 @@ class SSHTunnel():
         self.forward = None
         self.local_port = None
 
-    # TODO raise exceptions if address==None
-    def connect(self, auth, address, port, hostkey=None):
+    def configure(self, transport, auth, address, port):
         """
         Connect paramico transport
 
@@ -37,54 +35,11 @@ class SSHTunnel():
         :type hostkey: :py:class:`paramiko.key.HostKey`
         :param hostkey: remote host ssh server key
         """
-        try:
-            self.transport = paramiko.Transport((address, port))
-            self.username = auth.username
-            self.address = address
-            self.port = port
-            logger.debug(("Paramiko transport connecting to {0}:{1}"
-                          " with {2}".format(address, port, auth.method)))
-            if auth.method == AuthMethods.key:
-                self.connect_with_key(auth.username, auth.key, hostkey)
-            elif auth.method == AuthMethods.password:
-                self.connect_with_password(auth.username, auth.password,
-                                           hostkey)
-            else:
-                raise AuthenticationMethodMissingError()
-            logger.debug("Paramiko transport connected to {0}:{1}".format(
-                             address, port))
-        except (AuthenticationException, SSHException, socket.error) as ex:
-            raise SSHConnectionError("{0}:{1}".format(address, port), ex)
 
-    def connect_with_password(self, username, password, hostkey=None):
-        """
-        Connect paramico transport with password authentication
-
-        :type username: str
-        :param username: ssh authentication username
-        :type password: str
-        :param password: ssh authentication password
-        :type hostkey: :py:class:`paramiko.key.HostKey`
-        :param hostkey: remote host ssh server key
-        """
-        self.transport.connect(username=username,
-                               password=password,
-                               hostkey=hostkey)
-
-    def connect_with_key(self, username, key, hostkey=None):
-        """
-        Connect paramico transport with public key authentication
-
-        :type username: str
-        :param username: ssh authentication username
-        :type key: :py:class:`paramiko.key.RSAKey`
-        :param key: ssh authentication private key
-        :type hostkey: :py:class:`paramiko.key.HostKey`
-        :param hostkey: remote host ssh server key
-        """
-        self.transport.connect(username=username,
-                               pkey=key,
-                               hostkey=hostkey)
+        self.transport = transport
+        self.username = auth.username
+        self.address = address
+        self.port = port
 
     def start(self, local_port, remote_address, remote_port):
         """
