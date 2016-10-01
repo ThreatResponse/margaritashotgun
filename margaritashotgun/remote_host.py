@@ -148,7 +148,6 @@ class Host():
                 jump_host['port'] = 22
         else:
             jump_auth = None
-        print(jump_host)
         self.shell.connect(auth, address, self.remote_port, jump_host, jump_auth)
         transport = self.shell.transport()
         self.tunnel.configure(transport, auth, address, self.remote_port)
