@@ -188,7 +188,7 @@ class Cli():
             url = arguments.repository_url
 
         args_config = dict(aws=dict(bucket=arguments.bucket),
-                           logging=dict(log_dir=arguments.log_dir,
+                           logging=dict(dir=arguments.log_dir,
                                         prefix=arguments.log_prefix),
                            workers=arguments.workers,
                            repository=dict(enabled=arguments.repository,

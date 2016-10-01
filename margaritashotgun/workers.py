@@ -25,7 +25,7 @@ class Workers():
         self.queue = multiprocessing.Queue(-1)
 
         try:
-            log_dir = conf[0]['logging']['log_dir']
+            log_dir = conf[0]['logging']['dir']
             if log_dir[-1:] != '/':
                 log_dir = log_dir + '/'
         except TypeError:
