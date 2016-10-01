@@ -19,6 +19,14 @@ class NoConfigurationError(MargaritaShotgunError):
         msg = "No configuration provided while operating as a library"
         MargaritaShotgunError.__init__(self, msg)
 
+class ConfigurationMergeError(MargaritaShotgunError):
+    """
+    Raised when merging user configuration with the base config fails
+    """
+    def __init__(self, reason):
+        msg = "Configuration merge failed: {0}".format(reason)
+        MargaritaShotgunError.__init__(self, msg)
+
 class AuthenticationMissingUsernameError(MargaritaShotgunError):
     """
     Raised when authentication method is configured without a username

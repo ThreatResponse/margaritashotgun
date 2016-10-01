@@ -3,7 +3,7 @@ import logging
 import os
 import yaml
 from yaml import YAMLError
-from margaritashotgun.exceptions import InvalidConfigurationError
+from margaritashotgun.exceptions import *
 
 logger = logging.getLogger(__name__)
 
