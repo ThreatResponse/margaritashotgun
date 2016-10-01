@@ -120,6 +120,9 @@ class RemoteShell():
                     pkey=key,
                     sock=sock)
 
+    def transport(self):
+        return self.ssh.get_transport()
+
     def execute(self, command):
         """
         Executes command on remote hosts
