@@ -349,6 +349,10 @@ class Cli():
             for key in host.keys():
                 if key == 'filename' and host['filename'] is not None:
                     filename = True
+                if key == 'jump_host' and host['jump_host'] is not None:
+                    for jump_key in host['jump_host'].keys():
+                        if jump_key not in jump_host_allowed_keys:
+                            raise InvalidConfigurationError(key, host['jump_host'])
                 if key not in host_allowed_keys:
                     raise InvalidConfigurationError(key, host[key])
 
