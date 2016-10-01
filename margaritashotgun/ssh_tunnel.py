@@ -77,8 +77,6 @@ class SSHTunnel():
         if self.forward is not None:
             self.forward.stop()
             self.forward.join()
-        if self.transport is not None:
-            self.transport.close()
 
 
 class Forward(threading.Thread):
