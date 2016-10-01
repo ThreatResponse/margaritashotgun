@@ -195,10 +195,28 @@ class Cli():
                                            url=url))
 
         if arguments.server is not None:
+
+            jump_host = None
+            if arguments.jump_server is not None:
+                if arguments.jump_port is not None:
+                    jump_port = int(arguments.jump_port)
+                else:
+                    jump_port = None
+                jump_host = dict(zip(jump_host_allowed_keys,
+                                     [arguments.jump_server,
+                                      jump_port,
+                                      arguments.jump_username,
+                                      arguments.jump_password,
+                                      arguments.jump_key]))
+
+            if arguments.port is not None:
+                port = int(arguments.port)
+            else:
+                port = None
             host = dict(zip(host_allowed_keys,
-                            [arguments.server, int(arguments.port),
-                             arguments.username, arguments.password,
-                             module, key, arguments.filename]))
+                            [arguments.server, port, arguments.username,
+                             arguments.password, module, key,
+                             arguments.filename, jump_host]))
             args_config['hosts'] = []
             args_config['hosts'].append(host)
 
