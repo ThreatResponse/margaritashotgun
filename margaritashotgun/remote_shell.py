@@ -27,12 +27,13 @@ class RemoteShell():
         :param args: maximun number of async command executors
         """
 
+        self.jump_host_ssh = None
         self.ssh = paramiko.SSHClient()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.executor = ThreadPoolExecutor(max_workers=max_async_threads)
         self.futures = []
 
-    def connect(self, auth, address, port):
+    def connect(self, auth, address, port, jump_host, jump_auth):
         """
         Creates an ssh session to a remote host
 
@@ -43,19 +44,37 @@ class RemoteShell():
         :type port: int
         :param port: remote server port
         """
-        self.username = auth.username
-        self.address = address
-        self.port = port
+
+        self.target_address = address
+        sock = None
+        if jump_host is not None:
+            self.jump_host_ssh = paramiko.SSHClient()
+            self.jump_host_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.connect_with_auth(self.jump_host_ssh, jump_auth,
+                                   jump_host['addr'], jump_host['port'], sock)
+            transport = self.jump_host_ssh.get_transport()
+            dest_addr = (address, port)
+            jump_addr = (jump_host['addr'], jump_host['port'])
+            channel = transport.open_channel('direct-tcpip', dest_addr,
+                                             jump_addr)
+            self.connect_with_auth(self.ssh, auth, address, port, channel)
+        else:
+            self.connect_with_auth(self.ssh, auth, address, port, sock)
+
+    def connect_with_auth(self, ssh, auth, address, port, sock):
+        """
+        """
         try:
             logger.debug(("{0}: paramiko client connecting to "
                           "{0}:{1} with {2}".format(address,
                                                     port,
                                                     auth.method)))
             if auth.method == AuthMethods.key:
-                self.connect_with_key(auth.username, auth.key, address, port)
+                self.connect_with_key(ssh, auth.username, auth.key, address,
+                                      port, sock)
             elif auth.method == AuthMethods.password:
-                self.connect_with_password(auth.username, auth.password,
-                                           address, port)
+                self.connect_with_password(ssh, auth.username, auth.password,
+                                           address, port, sock)
             else:
                 raise AuthenticationMethodMissingError()
             logger.debug(("{0}: paramiko client connected to "
@@ -63,8 +82,7 @@ class RemoteShell():
         except (AuthenticationException, SSHException, SocketError) as ex:
             raise SSHConnectionError("{0}:{1}".format(address, port), ex)
 
-
-    def connect_with_password(self, username, password, address, port):
+    def connect_with_password(self, ssh, username, password, address, port, sock):
         """
         Create an ssh session to a remote host with a username and password
 
@@ -77,12 +95,13 @@ class RemoteShell():
         :type port: int
         :param port: remote server port
         """
-        self.ssh.connect(username=username,
-                         password=password,
-                         hostname=address,
-                         port=port)
+        ssh.connect(username=username,
+                    password=password,
+                    hostname=address,
+                    port=port,
+                    sock=sock)
 
-    def connect_with_key(self, username, key, address, port):
+    def connect_with_key(self, ssh, username, key, address, port, sock):
         """
         Create an ssh session to a remote host with a username and rsa key
 
@@ -95,10 +114,11 @@ class RemoteShell():
         :type port: int
         :param port: remote server port
         """
-        self.ssh.connect(hostname=address,
-                         port=port,
-                         username=username,
-                         pkey=key)
+        ssh.connect(hostname=address,
+                    port=port,
+                    username=username,
+                    pkey=key,
+                    sock=sock)
 
     def execute(self, command):
         """
@@ -107,7 +127,8 @@ class RemoteShell():
         :type command: str
         :param command: command to be run on remote host
         """
-        logger.debug('{0}: executing "{1}"'.format(self.address, command))
+        logger.debug('{0}: executing "{1}"'.format(self.target_address,
+                                                   command))
         stdin, stdout, stderr = self.ssh.exec_command(command)
         return dict(zip(['stdin', 'stdout', 'stderr'],
                         [stdin, stdout, stderr]))
@@ -122,7 +143,8 @@ class RemoteShell():
         :param callback: function to call when execution completes
         """
         logger.debug(('{0}: execute async "{1}"'
-                      'with callback {2}'.format(self.address, command,
+                      'with callback {2}'.format(self.target_address,
+                                                 command,
                                                  callback)))
         future = self.executor.submit(self.execute, command)
         if callback is not None:
@@ -141,7 +163,7 @@ class RemoteShell():
         data = stream.read().decode(encoding).strip("\n")
         if data != "":
             logger.debug(('{0}: decoded "{1}" with encoding '
-                          '{2}'.format(self.address, data, encoding)))
+                          '{2}'.format(self.target_address, data, encoding)))
         return data
 
     def upload_file(self, local_path, remote_path):
@@ -153,7 +175,7 @@ class RemoteShell():
         :type remote_path: str
         :param remote_path: destination path of upload on remote host
         """
-        logger.debug("{0}: uploading {1} to {0}:{2}".format(self.address,
+        logger.debug("{0}: uploading {1} to {0}:{2}".format(self.target_address,
                                                             local_path,
                                                             remote_path))
         try:
@@ -162,7 +184,7 @@ class RemoteShell():
             sftp.close()
         except SSHException as ex:
             logger.warn(("{0}: LiME module upload failed with exception:"
-                         "{1}".format(self.address, ex)))
+                         "{1}".format(self.target_address, ex)))
 
     def cleanup(self):
         """
