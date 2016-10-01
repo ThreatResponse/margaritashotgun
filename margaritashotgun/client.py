@@ -27,7 +27,11 @@ class Client():
         self.library = library
         if self.library is False:
             args = self.cli.parse_args(sys.argv[1:])
-            self.config = self.cli.configure(arguments=args)
+            try:
+                self.config = self.cli.configure(arguments=args)
+            except Exception as ex:
+                print("Error parsing config file: {0}".format(ex))
+                quit(1)
             if args.verbose is True:
                 self.verbose = True
         else:
