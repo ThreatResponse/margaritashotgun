@@ -29,3 +29,6 @@ log/*
 .coverage
 htmlcov
 docs/_build
+.vagrant
+*.ko
+*.log
