@@ -23,19 +23,19 @@ Quick Reference
 +--------+----------------------+---------------------+----------------------------------------+
 | ``-c`` | ``--config``         | path to config file | See the **Configuration File** section |
 +--------+----------------------+---------------------+----------------------------------------+
-| ``-s`` | ``--server``         | ip of remote server | DNS records may also be used           |
+|        | ``--server``         | ip of remote server | DNS records may also be used           |
++--------+----------------------+---------------------+----------------------------------------+
+|        | ``--version``        | print version       |                                        |
 +--------+----------------------+---------------------+----------------------------------------+
 | ``-b`` | ``--bucket``         | output S3 bucket    | Incommpatible with ``-o``              |
 +--------+----------------------+---------------------+----------------------------------------+
-| ``-o`` | ``--output_dir``     | local output folder | Incompatible with ``-b``               |
+|        | ``--port``           | ssh port            | ``22`` is used unless specified        |
 +--------+----------------------+---------------------+----------------------------------------+
-| ``-p`` | ``--port``           | ssh port            | ``22`` is used unless specified        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-u`` | ``--username``       | ssh username        | Username for ssh authentication        |
+|        | ``--username``       | ssh username        | Username for ssh authentication        |
 +--------+----------------------+---------------------+----------------------------------------+
 | ``-m`` | ``--module``         | lime kernel module  | Required if no repository is enabled   |
 +--------+----------------------+---------------------+----------------------------------------+
-| ``-p`` | ``--password``       | ssh password        | Unlockes RSA key when used with ``-k`` |
+|        | ``--password``       | ssh password        | Unlockes RSA key when used with ``-k`` |
 +--------+----------------------+---------------------+----------------------------------------+
 | ``-k`` | ``--key``            | RSA Key             | Unlocked via ``-p`` if supplied        |
 +--------+----------------------+---------------------+----------------------------------------+
@@ -47,11 +47,11 @@ Quick Reference
 +--------+----------------------+---------------------+----------------------------------------+
 | ``-w`` | ``--workers``        | worker count        | Constrains parallel captures           |
 +--------+----------------------+---------------------+----------------------------------------+
-| ``-v`` | ``--verbose``        | log debug messages  |                                        |
+|        | ``--verbose``        | log debug messages  |                                        |
 +--------+----------------------+---------------------+----------------------------------------+
-| ``-d`` | ``--log_dir``        | log directory       |                                        |
+|        | ``--log-dir``        | log directory       |                                        |
 +--------+----------------------+---------------------+----------------------------------------+
-|        | ``--log_prefix``     | log file prefix     |                                        |
+|        | ``--log-prefix``     | log file prefix     |                                        |
 +--------+----------------------+---------------------+----------------------------------------+
 
 Config
@@ -63,31 +63,29 @@ The structure of this file is outlided in the ``Configuration`` section below.
 Server
 ------
 
-The ``-s`` and ``--server`` flags specify the server being targeted for memory capture.
+The ``--server`` flag specifies the server being targeted for memory capture.
 A DNS record or IP address are valid inputs.
+
+Version
+-------
+
+The ``--version`` flag prints the module version.
 
 Bucket
 ------
 
 The ``-b`` and ``--bucket`` flags specify the destination bucket when dumping memory to s3.
-This flag cannot be used in conjunction wth ``-o`` or ``--output_dir``.
-
-Output_Dir
-----------
-
-The ``-o`` and ``--output_dir`` flags specify the destination folder when dumping memory to the local filesystem.
-This flag  cannot be used in conjunction with ``-b`` or ``--bucket``.
 
 Port
 ----
 
-The ``-p`` and ``--port`` flags specify the port that ssh is running on the remote server specified by ``-s`` or ``--server``.
+The ``--port`` flag specifies the port that ssh is running on the remote server specified by ``--server``.
 This flag is optional and port ``22`` will be assumed if no value is provided.
 
 Username
 --------
 
-The ``-u`` and ``--username`` flags specify the user account to authenticate with when connecting to the remote server specified by ``-s`` or ``--server``.
+The ``--username`` flag specifies the user account to authenticate with when connecting to the remote server specified by ``--server``.
 
 Module
 ------
@@ -98,20 +96,19 @@ This flag is required if no kernel module repository is enabled with the ``--rep
 Password
 --------
 
-The ``-p`` and ``--password`` flags specify the password used for authentication with connection to the remote server specified by ``-s`` or ``--server``.
+The ``--password`` flag specifies the password used for authentication with connection to the remote server specified by ``--server``.
 When used in conjuction with the ``-k`` or ``--key`` flags this password will be used to unlock a protected private key file.
 
 Key
 ---
 
-The ``-k`` and ``--key`` flags accept a relative or absolute path to a a private key file used for authentication when connecting to the server specified by ``-s`` or ``-server``.
-If the private key file specified is password protected use the ``-p`` or ``--password`` flags to specify the password that unlocks the private key.
+The ``-k`` and ``--key`` flags accept a relative or absolute path to a a private key file used for authentication when connecting to the server specified by ``-server``.
+If the private key file specified is password protected use the ``--password`` flag to specify the password that unlocks the private key.
 
 Filename
 --------
 
 The ``-f`` and ``--filename`` flags specify the name of the file memory will be saved to when dumping to the local filesystem.
-The file will be saved to the local directory unless the ``-o`` or ``--output_dir`` options are configured.
 
 Repository
 ----------
@@ -119,7 +116,7 @@ Repository
 The ``--repository`` flag enables automatic kernel module resolution via the repository configured with ``--repository-url``.
 Margarita Shotgun will not query any repositories unless explicitly enabled with the ``--repository`` flag.
 
-Repository_Url
+Repository-Url
 --------------
 
 The ``--repository-url`` flag specifies where to search for kernel modules.  The default public repository provided by `Threat Response <http://www.threatresponse.cloud/>`__ is availible at ``https://threatresponse-lime-modules.s3.amazonaws.com``
@@ -135,17 +132,17 @@ Eg. ``--workers 3`` will process 3 memory captures simultaneously.
 Verbose
 -------
 
-The ``-v`` and ``--verbose`` flags enable debug logging, including each command executed on remote hosts as a part of the memory capture process.
+The ``--verbose`` flag enables debug logging, including each command executed on remote hosts as a part of the memory capture process.
 
 Log_Dir
 -------
 
-The ``-d`` and ``--log_dir`` flags specify the directory in which to log files will be saved during memory capture.
+The ``--log-dir`` flag specify the directory in which to log files will be saved during memory capture.
 
 Log_Prefix
 ----------
 
-The ``--log_prefix`` flag allows a custom case number to be prepended onto log files for easy identification.
+The ``--log-prefix`` flag allows a custom case number to be prepended onto log files for easy identification.
 
 Configuration File
 ******************

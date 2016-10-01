@@ -34,6 +34,9 @@ class Client():
                 quit(1)
             if args.verbose is True:
                 self.verbose = True
+            if args.version is True:
+                print(margaritashotgun.__version__)
+                quit()
         else:
             if config is None:
                 raise NoConfigurationError
