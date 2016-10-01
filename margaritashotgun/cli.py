@@ -10,11 +10,14 @@ logger = logging.getLogger(__name__)
 default_allowed_keys = ["aws", "hosts", "workers", "logging", "repository"]
 aws_allowed_keys = ["bucket"]
 host_allowed_keys = ["addr", "port", "username", "password",
-                     "module", "key", "filename"]
-logging_allowed_keys = ["log_dir", "prefix"]
+                     "module", "key", "filename", "jump_host"]
+jump_host_allowed_keys = ["addr", "port", "username", "password", "key"]
+logging_allowed_keys = ["dir", "prefix"]
 repository_allowed_keys = ["enabled", "url"]
 default_host_config = dict(zip(host_allowed_keys,
                                [None]*len(host_allowed_keys)))
+default_jump_host_config = dict(zip(jump_host_allowed_keys,
+                                    [None]*len(jump_host_allowed_keys)))
 default_config = {"aws": {"bucket": None},
                   "hosts": [],
                   "workers": "auto",
@@ -51,13 +54,23 @@ class Cli():
         opts = parser.add_argument_group()
         opts.add_argument('-P', '--port', help='ssh port on remote server')
         opts.add_argument('-u', '--username',
-                          help='username for ssh connection')
+                          help='username for ssh connection to target server')
         opts.add_argument('-m', '--module',
                           help='path to kernel lime kernel module')
         opts.add_argument('-p', '--password',
                           help='password for user or encrypted keyfile')
         opts.add_argument('-k', '--key',
-                          help='path to rsa key for ssh connection')
+                          help='path to rsa key for ssh connection to target server')
+        opts.add_argument('--jump-server',
+                          help='hostname or ip of jump server')
+        opts.add_argument('--jump-port',
+                          help='ssh port on jump server')
+        opts.add_argument('--jump-username',
+                          help='username for ssh connection to jump server')
+        opts.add_argument('--jump-password',
+                          help='password for jump-user or encrypted keyfile')
+        opts.add_argument('--jump-key',
+                          help='path to rsa key for ssh connection to jump server')
         opts.add_argument('-f', '--filename',
                           help='memory dump filename')
         opts.add_argument('--repository', action='store_true',
@@ -96,34 +109,54 @@ class Cli():
 
         if arguments is not None:
             args_config = self.configure_args(arguments)
-            default_config.update(args_config)
+            working_config = self.merge_config(default_config, args_config)
         if config is not None:
-            try:
-                self.validate_config(config)
-            except InvalidConfigurationError as ex:
-                logger.warn(ex)
-                raise
-            default_config.update(config)
-
-        # ensure each host is populated with all keys
-        hosts = []
-        for host in default_config['hosts']:
-            for key in host_allowed_keys:
-                if key not in host:
-                    host[key] = None
-            hosts.append(host)
-        default_config['hosts'] = hosts
+            self.validate_config(config)
+            working_config = self.merge_config(default_config, config)
 
         # override configuration with environment variables
         repo = self.get_env_default('LIME_REPOSITORY', 'disabled')
         repo_url = self.get_env_default('LIME_REPOSITORY_URL',
-                                    default_config['repository']['url'])
+                                    working_config['repository']['url'])
         if repo.lower() == 'enabled':
-            default_config['repository']['enabled'] = True
+            working_config['repository']['enabled'] = True
 
-        default_config['repository']['url'] = repo_url
+        working_config['repository']['url'] = repo_url
 
-        return default_config
+        return working_config
+
+    def merge_config(self, base, config):
+        """
+        """
+
+        for key in config:
+            if key in base:
+                # iterate through hosts and merge against default_host_config
+                if isinstance(config[key], list) and key == 'hosts':
+                    hosts = []
+                    for host in config[key]:
+                        hosts.append(self.merge_config(default_host_config,
+                                                       host))
+                    base[key] = hosts
+                # merge 'jump_host' dict against default_jump_host_config
+                elif isinstance(config[key], dict) and key == 'jump_host':
+                    # only merge with default if jump_host has a value
+                    if config[key] is not None:
+                        base[key] = self.merge_config(default_jump_host_config,
+                                                      config[key])
+                    else:
+                        base[key] = config[key]
+                # recursively merge dictionaries against the base config
+                elif isinstance(base[key], dict) and isinstance(config[key], dict):
+                    base[key] = self.merge_config(base[key], config[key])
+                # store user leaf nodes in the base config
+                else:
+                    base[key] = config[key]
+            else:
+                reason = ("{0} key in user config but not in base. base "
+                          "config keys: {1}".format(key, base.keys()))
+                raise ConfigurationMergeError(reason)
+        return base
 
     def get_env_default(self, variable, default):
         """
