@@ -26,7 +26,7 @@ def _init(queue):
 def process(conf):
     """
     """
-
+    jump_host = conf['host']['jump_host']
     remote_addr = conf['host']['addr']
     remote_port = conf['host']['port']
     username = conf['host']['username']
@@ -59,7 +59,8 @@ def process(conf):
 
     try:
         host = Host()
-        host.connect(username, password, key, remote_addr, remote_port)
+        host.connect(username, password, key, remote_addr, remote_port,
+                     jump_host)
         host.start_tunnel(tunnel_port, tunnel_addr, tunnel_port)
         if lime_module is None:
             kernel_version = host.kernel_version()
@@ -118,7 +119,7 @@ class Host():
         self.commands = Commands
         self.tunnel = SSHTunnel()
 
-    def connect(self, username, password, key, address, port):
+    def connect(self, username, password, key, address, port, jump_host):
         """
         Connect ssh tunnel and shell executor to remote host
 
@@ -137,9 +138,20 @@ class Host():
             self.remote_port = 22
         else:
             self.remote_port = int(port)
+
         auth = Auth(username=username, password=password, key=key)
-        self.tunnel.connect(auth, address, self.remote_port)
-        self.shell.connect(auth, address, self.remote_port)
+        if jump_host is not None:
+            jump_auth = Auth(username=jump_host['username'],
+                             password=jump_host['password'],
+                             key=jump_host['key'])
+            if jump_host['port'] is None:
+                jump_host['port'] = 22
+        else:
+            jump_auth = None
+        print(jump_host)
+        self.shell.connect(auth, address, self.remote_port, jump_host, jump_auth)
+        transport = self.shell.transport()
+        self.tunnel.configure(transport, auth, address, self.remote_port)
         self.remote_addr = address
 
     def start_tunnel(self, local_port, remote_address, remote_port):
