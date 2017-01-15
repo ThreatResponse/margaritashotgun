@@ -43,7 +43,6 @@ Below is an example directory listing of the repository structure.
 
 .. code-block:: text
 
-    /
     ├── REPO_SIGNING_KEY.asc
     ├── modules
     │   ├── lime-2.6.32-131.0.15.el6.centos.plus.x86_64.ko
@@ -66,9 +65,22 @@ The ``<revision></revision>`` element contains the unix timestamp at which the m
 
 The structure of a ``<data/>`` element is described in the following table.
 
-+---------------+
-| data          |
-+---------------+
++----------------+-----------------------------------------------+
+| type           | metadata file type                            |
++----------------+-----------------------------------------------+
+| checksum       | checksum of gzipped manifest file             |
++----------------+-----------------------------------------------+
+| open_checksum  | checksum of deflated manifest file            |
++----------------+-----------------------------------------------+
+| location       | href: path to gzipped manifest file           |
++----------------+-----------------------------------------------+
+| timestamp      | last modified timestamp of deflated file      |
++----------------+-----------------------------------------------+
+| size           | gzipped filesize                              |
++----------------+-----------------------------------------------+
+| open_size      | deflated filesize                             |
++----------------+-----------------------------------------------+
+
 
 Below is an example repository metadata listing.
 
@@ -93,9 +105,25 @@ Module manifest
 
 A manifest consists of multiple module elements inside of a modules element. The module tag and it's child elements are documented in the following table.
 
-+---------------+
-| module        |
-+---------------+
++----------------+-----------------------------------------------+
+| type           | kernel module type                            |
++----------------+-----------------------------------------------+
+| name           | kernel module friendly name                   |
++----------------+-----------------------------------------------+
+| arch           | kernel module architecture                    |
++----------------+-----------------------------------------------+
+| checksum       | kernel module checksum                        |
++----------------+-----------------------------------------------+
+| version        | kernel version targeted by module             |
++----------------+-----------------------------------------------+
+| packager       | packager of kernel module                     |
++----------------+-----------------------------------------------+
+| location       | href: path to module                          |
++----------------+-----------------------------------------------+
+| signature      | href: path to module signature                |
++----------------+-----------------------------------------------+
+| platform       | the operating system this module targets      |
++----------------+-----------------------------------------------+
 
 Below is a truncated manifest.
 
@@ -125,7 +153,6 @@ Below is a truncated manifest.
         <platform>linux</platform>
       </module>
     </modules>
-
 
 
 GPG Signatures
