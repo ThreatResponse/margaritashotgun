@@ -96,12 +96,17 @@ class RemoteShell():
         :type port: int
         :param port: remote server port
         """
-        ssh.connect(username=username,
-                    password=password,
-                    hostname=address,
-                    port=port,
-                    sock=sock,
-                    timeout=timeout)
+        try:
+            ssh.connect(username=username,
+                        password=password,
+                        hostname=address,
+                        port=port,
+                        sock=sock,
+                        timeout=timeout)
+        except AuthenticationException as ex:
+            raise SSHConnectionError(address, ex)
+        except SSHException as ex:
+            raise SSHConnectionError(address, ex)
 
     def connect_with_key(self, ssh, username, key, address, port, sock):
         """
@@ -134,11 +139,14 @@ class RemoteShell():
         :param command: command to be run on remote host
         """
         if self.ssh.get_transport() != None:
-            logger.debug('{0}: executing "{1}"'.format(self.target_address,
-                                                       command))
-            stdin, stdout, stderr = self.ssh.exec_command(command)
-            return dict(zip(['stdin', 'stdout', 'stderr'],
-                            [stdin, stdout, stderr]))
+            try:
+                logger.debug('{0}: executing "{1}"'.format(self.target_address,
+                                                           command))
+                stdin, stdout, stderr = self.ssh.exec_command(command)
+                return dict(zip(['stdin', 'stdout', 'stderr'],
+                                [stdin, stdout, stderr]))
+            except SSHException as ex:
+                pass
         else:
             raise SSHCommandError(self.target_address, command, "")
 
