@@ -64,7 +64,7 @@ class RemoteShell():
             raise SSHConnectionError("{0}:{1}".format(address, port), ex)
 
 
-    def connect_with_password(self, username, password, address, port):
+    def connect_with_password(self, username, password, address, port, timeout=20):
         """
         Create an ssh session to a remote host with a username and password
 
@@ -80,9 +80,10 @@ class RemoteShell():
         self.ssh.connect(username=username,
                          password=password,
                          hostname=address,
-                         port=port)
+                         port=port,
+                         timeout=timeout)
 
-    def connect_with_key(self, username, key, address, port):
+    def connect_with_key(self, username, key, address, port, timeout=20):
         """
         Create an ssh session to a remote host with a username and rsa key
 
@@ -98,7 +99,8 @@ class RemoteShell():
         self.ssh.connect(hostname=address,
                          port=port,
                          username=username,
-                         pkey=key)
+                         pkey=key,
+                         timeout=timeout)
 
     def execute(self, command):
         """
