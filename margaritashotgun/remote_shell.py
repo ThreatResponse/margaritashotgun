@@ -45,21 +45,25 @@ class RemoteShell():
         :param port: remote server port
         """
 
-        self.target_address = address
-        sock = None
-        if jump_host is not None:
-            self.jump_host_ssh = paramiko.SSHClient()
-            self.jump_host_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.connect_with_auth(self.jump_host_ssh, jump_auth,
-                                   jump_host['addr'], jump_host['port'], sock)
-            transport = self.jump_host_ssh.get_transport()
-            dest_addr = (address, port)
-            jump_addr = (jump_host['addr'], jump_host['port'])
-            channel = transport.open_channel('direct-tcpip', dest_addr,
-                                             jump_addr)
-            self.connect_with_auth(self.ssh, auth, address, port, channel)
-        else:
-            self.connect_with_auth(self.ssh, auth, address, port, sock)
+        try:
+            self.target_address = address
+            sock = None
+            if jump_host is not None:
+                self.jump_host_ssh = paramiko.SSHClient()
+                self.jump_host_ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                self.connect_with_auth(self.jump_host_ssh, jump_auth,
+                                       jump_host['addr'], jump_host['port'], sock)
+                transport = self.jump_host_ssh.get_transport()
+                dest_addr = (address, port)
+                jump_addr = (jump_host['addr'], jump_host['port'])
+                channel = transport.open_channel('direct-tcpip', dest_addr,
+                                                 jump_addr)
+                self.connect_with_auth(self.ssh, auth, address, port, channel)
+            else:
+                self.connect_with_auth(self.ssh, auth, address, port, sock)
+        except (AuthenticationException, SSHException,
+                ChannelException, SocketError) as ex:
+            raise SSHConnectionError("{0}:{1}".format(address, port), ex)
 
     def connect_with_auth(self, ssh, auth, address, port, sock):
         """
