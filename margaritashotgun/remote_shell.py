@@ -1,5 +1,5 @@
 import paramiko
-from paramiko import AuthenticationException, SSHException
+from paramiko import AuthenticationException, SSHException, ChannelException
 from enum import Enum
 from concurrent.futures import ThreadPoolExecutor
 from socket import error as SocketError
@@ -138,17 +138,22 @@ class RemoteShell():
         :type command: str
         :param command: command to be run on remote host
         """
-        if self.ssh.get_transport() != None:
-            try:
+        try:
+            if self.ssh.get_transport() is not None:
                 logger.debug('{0}: executing "{1}"'.format(self.target_address,
                                                            command))
                 stdin, stdout, stderr = self.ssh.exec_command(command)
                 return dict(zip(['stdin', 'stdout', 'stderr'],
                                 [stdin, stdout, stderr]))
-            except SSHException as ex:
-                pass
-        else:
-            raise SSHCommandError(self.target_address, command, "")
+            else:
+                raise SSHConnectionError(self.target_address,
+                                         "ssh transport is closed")
+        except (AuthenticationException, SSHException,
+                ChannelException, SocketError) as ex:
+            logger.critical(("{0} execution failed on {1} with exception:"
+                             "{2}".format(command, self.target_address,
+                                               ex)))
+            raise SSHCommandError(self.target_address, command, ex)
 
     def execute_async(self, command, callback=None):
         """
@@ -159,14 +164,21 @@ class RemoteShell():
         :type callback: function
         :param callback: function to call when execution completes
         """
-        logger.debug(('{0}: execute async "{1}"'
-                      'with callback {2}'.format(self.target_address,
-                                                 command,
-                                                 callback)))
-        future = self.executor.submit(self.execute, command)
-        if callback is not None:
-            future.add_done_callback(callback)
-        return future
+        try:
+            logger.debug(('{0}: execute async "{1}"'
+                          'with callback {2}'.format(self.target_address,
+                                                     command,
+                                                     callback)))
+            future = self.executor.submit(self.execute, command)
+            if callback is not None:
+                future.add_done_callback(callback)
+            return future
+        except (AuthenticationException, SSHException,
+                ChannelException, SocketError) as ex:
+            logger.critical(("{0} execution failed on {1} with exception:"
+                             "{2}".format(command, self.target_address,
+                                               ex)))
+            raise SSHCommandError(self.target_address, command, ex)
 
     def decode(self, stream, encoding='utf-8'):
         """
