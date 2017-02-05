@@ -47,20 +47,21 @@ class Cli():
 
         root = parser.add_mutually_exclusive_group(required=True)
         root.add_argument('-c', '--config', help='path to config.yml')
-        root.add_argument('-s', '--server',
+        root.add_argument('--server',
                           help='hostname or ip of target server')
+        root.add_argument('--version', action='store_true', help='show version')
 
         opts = parser.add_argument_group()
-        opts.add_argument('-P', '--port', help='ssh port on remote server')
-        opts.add_argument('-u', '--username',
+        opts.add_argument('--port', help='ssh port on remote server')
+        opts.add_argument('--username',
                           help='username for ssh connection')
-        opts.add_argument('-m', '--module',
+        opts.add_argument('--module',
                           help='path to kernel lime kernel module')
-        opts.add_argument('-p', '--password',
+        opts.add_argument('--password',
                           help='password for user or encrypted keyfile')
-        opts.add_argument('-k', '--key',
+        opts.add_argument('--key',
                           help='path to rsa key for ssh connection')
-        opts.add_argument('-f', '--filename',
+        opts.add_argument('--filename',
                           help='memory dump filename')
         opts.add_argument('--repository', action='store_true',
                           help='enable automatic kernel module downloads')
@@ -75,21 +76,21 @@ class Cli():
                           help=('number of workers to run in parallel,'
                                 'default: auto acceptable values are'
                                 '(INTEGER | "auto")'))
-        opts.add_argument('-v', '--verbose', action='store_true',
+        opts.add_argument('--verbose', action='store_true',
                           help='log debug messages')
         opts.set_defaults(repository_manifest='primary')
         opts.set_defaults(gpg_verify=True)
 
         output = parser.add_mutually_exclusive_group(required=False)
-        output.add_argument('-b', '--bucket',
+        output.add_argument('--bucket',
                             help='memory dump output bucket')
-        output.add_argument('-o', '--output_dir',
+        output.add_argument('--output-dir',
                             help='memory dump output directory')
 
         log = parser.add_argument_group()
-        log.add_argument('-d', '--log_dir',
+        log.add_argument('--log-dir',
                          help='log directory')
-        log.add_argument('--log_prefix',
+        log.add_argument('--log-prefix',
                          help='log file prefix')
         return parser.parse_args(args)
 
