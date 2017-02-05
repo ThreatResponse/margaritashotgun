@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 default_allowed_keys = ["aws", "hosts", "workers", "logging", "repository"]
 aws_allowed_keys = ["bucket"]
 host_allowed_keys = ["addr", "port", "username", "password",
-                     "module", "key", "filename", "jump_host"]
+                    "module", "key", "filename", "jump_host"]
 jump_host_allowed_keys = ["addr", "port", "username", "password", "key"]
 logging_allowed_keys = ["dir", "prefix"]
-repository_allowed_keys = ["enabled", "url"]
+repository_allowed_keys = ["enabled", "url", "gpg_verify", "manifest"]
 default_host_config = dict(zip(host_allowed_keys,
                                [None]*len(host_allowed_keys)))
 default_jump_host_config = dict(zip(jump_host_allowed_keys,
@@ -26,7 +26,9 @@ default_config = {"aws": {"bucket": None},
                       "prefix": None},
                   "repository": {
                       "enabled": False,
-                      "url": "https://threatresponse-lime-modules.s3.amazonaws.com/"
+                      "url": "https://threatresponse-lime-modules.s3.amazonaws.com/",
+                      "gpg_verify": True,
+                      "manifest": "primary"
                   }}
 
 
@@ -57,11 +59,12 @@ class Cli():
         opts.add_argument('--port', help='ssh port on remote server')
         opts.add_argument('--username',
                           help='username for ssh connection to target server')
-        opts.add_argument('-m', '--module', help='path to lime kernel module')
+        opts.add_argument('--module',
+                          help='path to kernel lime kernel module')
         opts.add_argument('--password',
                           help='password for user or encrypted keyfile')
-        opts.add_argument('-k', '--key',
-                          help='path to rsa key for ssh connection to target server')
+        opts.add_argument('--key',
+                          help='path to rsa key for ssh connection')
         opts.add_argument('--jump-server',
                           help='hostname or ip of jump server')
         opts.add_argument('--jump-port',
@@ -72,26 +75,37 @@ class Cli():
                           help='password for jump-user or encrypted keyfile')
         opts.add_argument('--jump-key',
                           help='path to rsa key for ssh connection to jump server')
-        opts.add_argument('-f', '--filename',
+        opts.add_argument('--filename',
                           help='memory dump filename')
         opts.add_argument('--repository', action='store_true',
                           help='enable automatic kernel module downloads')
         opts.add_argument('--repository-url',
-                          help='repository url')
-        opts.add_argument('-w', '--workers', default=1,
+                          help='kernel module repository url')
+        opts.add_argument('--repository-manifest',
+                          help='specify alternate repository manifest')
+        opts.add_argument('--gpg-no-verify', dest='gpg_verify',
+                          action='store_false',
+                          help='skip lime module gpg signature check')
+        opts.add_argument('--workers', default=1,
                           help=('number of workers to run in parallel,'
                                 'default: auto acceptable values are'
                                 '(INTEGER | "auto")'))
         opts.add_argument('--verbose', action='store_true',
                           help='log debug messages')
+        opts.set_defaults(repository_manifest='primary')
+        opts.set_defaults(gpg_verify=True)
 
         output = parser.add_mutually_exclusive_group(required=False)
-        output.add_argument('-b', '--bucket',
+        output.add_argument('--bucket',
                             help='memory dump output bucket')
+        output.add_argument('--output-dir',
+                            help='memory dump output directory')
 
         log = parser.add_argument_group()
-        log.add_argument('--log-dir', help='log directory')
-        log.add_argument('--log-prefix', help='log file prefix')
+        log.add_argument('--log-dir',
+                         help='log directory')
+        log.add_argument('--log-prefix',
+                         help='log file prefix')
         return parser.parse_args(args)
 
     def configure(self, arguments=None, config=None):
@@ -188,7 +202,9 @@ class Cli():
                                         prefix=arguments.log_prefix),
                            workers=arguments.workers,
                            repository=dict(enabled=arguments.repository,
-                                           url=url))
+                                           url=url,
+                                           manifest=arguments.repository_manifest,
+                                           gpg_verify=arguments.gpg_verify))
 
         if arguments.server is not None:
 

@@ -16,8 +16,6 @@ try:
 except ImportError:
     from logutils.queue import QueueHandler
 
-# TODO: add config item to resolve modules automatically
-# TODO: add config item repository url (only suports s3 bucket for now
 
 def _init(queue):
     global log_queue
@@ -42,6 +40,8 @@ def process(conf):
 
     repository_enabled = conf['repository']['enabled']
     repository_url = conf['repository']['url']
+    repository_manifest = conf['repository']['manifest']
+    repository_gpg_verify = conf['repository']['gpg_verify']
 
     queue_handler = QueueHandler(log_queue)
     logger = logging.getLogger('margaritashotgun')
@@ -65,15 +65,11 @@ def process(conf):
         if lime_module is None:
             kernel_version = host.kernel_version()
             if repository_enabled:
-                repo = Repository(repository_url)
-                match = repo.search_modules(kernel_version)
-                if match is not None:
-                    lime_module = repo.fetch_module(match)
-                    host.upload_module(lime_module)
-                else:
-                    raise KernelModuleNotFoundError(kernel_version, repo.url)
+                repo = Repository(repository_url, repository_gpg_verify)
+                repo.init_gpg()
+                lime_module = repo.fetch(kernel_version, repository_manifest)
+                host.upload_module(lime_module)
             else:
-                # TODO: prompt user to search repository when running interactively
                 raise KernelModuleNotProvidedError(kernel_version)
         else:
             host.upload_module(lime_module, remote_module_path)
@@ -84,6 +80,7 @@ def process(conf):
         if lime_loaded:
             result = host.capture_memory(dest, filename, bucket, progressbar)
         else:
+            logger.debug("lime failed to load on {0}".format(remote_addr))
             result = False
 
         logger.removeHandler(queue_handler)

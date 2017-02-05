@@ -18,41 +18,57 @@ Run ``margaritashotgun -h`` at the command line, detailed information on flags i
 Quick Reference
 ---------------
 
-+--------+----------------------+---------------------+----------------------------------------+
-| Flag   | Alternate Flag       | Use                 | Notes                                  |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-c`` | ``--config``         | path to config file | See the **Configuration File** section |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--server``         | ip of remote server | DNS records may also be used           |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--version``        | print version       |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-b`` | ``--bucket``         | output S3 bucket    | Incommpatible with ``-o``              |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--port``           | ssh port            | ``22`` is used unless specified        |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--username``       | ssh username        | Username for ssh authentication        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-m`` | ``--module``         | lime kernel module  | Required if no repository is enabled   |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--password``       | ssh password        | Unlockes RSA key when used with ``-k`` |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-k`` | ``--key``            | RSA Key             | Unlocked via ``-p`` if supplied        |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-f`` | ``--filename``       | output file         |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--repository``     | enable kernel repo  | Default state is disabled              |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--repository-url`` | custom repo url     | Defaults to threat response modules    |
-+--------+----------------------+---------------------+----------------------------------------+
-| ``-w`` | ``--workers``        | worker count        | Constrains parallel captures           |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--verbose``        | log debug messages  |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--log-dir``        | log directory       |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
-|        | ``--log-prefix``     | log file prefix     |                                        |
-+--------+----------------------+---------------------+----------------------------------------+
++---------------------------+--------------------------+-------------------------------------------+
+| Flag                      | Use                      | Notes                                     |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--config``              | path to config file      | See the **Configuration File** section    |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--server``              | ip of remote server      | DNS records may also be used              |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--version``             | print version info       |                                           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--bucket``              | output S3 bucket         | Incommpatible with ``-o``                 |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--output-dir``          | local output folder      | Incompatible with ``-b``                  |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--port``                | ssh port                 | ``22`` is used unless specified           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--username``            | ssh username             | Username for ssh authentication           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--module``              | lime kernel module       | Required if no repository is enabled      |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--password``            | ssh password             | Unlockes RSA key when used with ``-k``    |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--key``                 | RSA Key                  | Unlocked via ``-p`` if supplied           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--jump-server``         | ip of jump host          | DNS records may also be used              |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--jump-port``           | jump host ssh port       | ``22`` is used unless specified           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--jump-username``       | jump host ssh username   | Username for jump host ssh authentication |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--jump-password``       | jump host ssh password   |                                           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--jump-key``            | jump host RSA key        |                                           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--filename``            | output file              |                                           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--repository``          | enable kernel repo       | Default state is disabled                 |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--repository-url``      | custom repo url          | Defaults to threat response modules       |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--repository-manifest`` | custom repo url          | Defaults to "primary"                     |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--gpg-no-verify``       | disable signature checks |                                           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--workers``             | worker count             | Constrains parallel captures              |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--verbose``             | log debug messages       |                                           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--log-dir``             | log directory            |                                           |
++---------------------------+--------------------------+-------------------------------------------+
+| ``--log-prefix``          | log file prefix          |                                           |
++---------------------------+--------------------------+-------------------------------------------+
 
 Config
 ------
@@ -74,7 +90,14 @@ The ``--version`` flag prints the module version.
 Bucket
 ------
 
-The ``-b`` and ``--bucket`` flags specify the destination bucket when dumping memory to s3.
+The ``--bucket`` flag specifies the destination bucket when dumping memory to s3.
+This flag cannot be used in conjunction wth ``-o`` or ``--output-dir``.
+
+Output-Dir
+----------
+
+The ``--output-dir`` flags specify the destination folder when dumping memory to the local filesystem.
+This flag  cannot be used in conjunction with ``--bucket``.
 
 Port
 ----
@@ -90,25 +113,26 @@ The ``--username`` flag specifies the user account to authenticate with when con
 Module
 ------
 
-The ``-m`` and ``--module`` flags accept a relative or absolute path to a `LiME <https://github.com/504ensicsLabs/LiME>`__ kernel module.
+The ``--module`` flag accepts a relative or absolute path to a `LiME <https://github.com/504ensicsLabs/LiME>`__ kernel module.
 This flag is required if no kernel module repository is enabled with the ``--repository`` flag.
 
 Password
 --------
 
 The ``--password`` flag specifies the password used for authentication with connection to the remote server specified by ``--server``.
-When used in conjuction with the ``-k`` or ``--key`` flags this password will be used to unlock a protected private key file.
+When used in conjuction with the ``--key`` flag this password will be used to unlock a password protected private key file.
 
 Key
 ---
 
-The ``-k`` and ``--key`` flags accept a relative or absolute path to a a private key file used for authentication when connecting to the server specified by ``-server``.
-If the private key file specified is password protected use the ``--password`` flag to specify the password that unlocks the private key.
+The ``--key`` flag accepts a relative or absolute path to a a private key file used for authentication when connecting to the server specified by ``-server``.
+If the private key file specified is password protected use the ``-p`` or ``--password`` flags to specify the password that unlocks the private key.
 
 Filename
 --------
 
-The ``-f`` and ``--filename`` flags specify the name of the file memory will be saved to when dumping to the local filesystem.
+The ``--filename`` flags specify the name of the file memory will be saved to when dumping to the local filesystem.
+The file will be saved to the local directory unless the ``--output-dir`` option is configured.
 
 Repository
 ----------
@@ -121,10 +145,20 @@ Repository-Url
 
 The ``--repository-url`` flag specifies where to search for kernel modules.  The default public repository provided by `Threat Response <http://www.threatresponse.cloud/>`__ is availible at ``https://threatresponse-lime-modules.s3.amazonaws.com``
 
+Repository-manifest
+-------------------
+
+The ``--repository-manifest`` flag specifies alternate kernel module manifests in the remote repository configured by ``--repository-url``.  For more information on repository structure and manifests see the :doc:`architecture <architecture>` page or `lime-compiler repository <https://github.com/threatresponse/lime-compiler>`__.
+
+Gpg-no-verify
+-------------
+
+The ``--gpg-no-verify`` flag disables gpg verification of kernel modules downloaded from a remote repository.
+
 Workers
 -------
 
-The ``-w`` and ``--workers`` flags specify how many worker processes will be spawned to process memory captures in parallel.
+The ``--workers`` flag specifies how many worker processes will be spawned to process memory captures in parallel.
 The default value for this flag is ``auto`` which will spawn a process per remote host up to the number of cpu cores on the local system.
 Integer values can be provided instead of the ``auto`` keyword.
 Eg. ``--workers 3`` will process 3 memory captures simultaneously.
@@ -134,15 +168,15 @@ Verbose
 
 The ``--verbose`` flag enables debug logging, including each command executed on remote hosts as a part of the memory capture process.
 
-Log_Dir
+Log-Dir
 -------
 
-The ``--log-dir`` flag specify the directory in which to log files will be saved during memory capture.
+The ``--log-dir`` flag specifies the directory in which log files will be saved during memory capture.
 
-Log_Prefix
+Log-Prefix
 ----------
 
-The ``--log-prefix`` flag allows a custom case number to be prepended onto log files for easy identification.
+The ``--log-prefix`` flag specifies a custom case number that is prepended onto log files.
 
 Configuration File
 ******************

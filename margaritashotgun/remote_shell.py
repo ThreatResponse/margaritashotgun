@@ -82,7 +82,8 @@ class RemoteShell():
         except (AuthenticationException, SSHException, SocketError) as ex:
             raise SSHConnectionError("{0}:{1}".format(address, port), ex)
 
-    def connect_with_password(self, ssh, username, password, address, port, sock):
+    def connect_with_password(self, ssh, username, password, address, port, sock,
+                              timeout=20):
         """
         Create an ssh session to a remote host with a username and password
 
@@ -99,7 +100,8 @@ class RemoteShell():
                     password=password,
                     hostname=address,
                     port=port,
-                    sock=sock)
+                    sock=sock,
+                    timeout=timeout)
 
     def connect_with_key(self, ssh, username, key, address, port, sock):
         """
@@ -118,7 +120,8 @@ class RemoteShell():
                     port=port,
                     username=username,
                     pkey=key,
-                    sock=sock)
+                    sock=sock,
+                    timeout=timeout)
 
     def transport(self):
         return self.ssh.get_transport()
@@ -130,11 +133,14 @@ class RemoteShell():
         :type command: str
         :param command: command to be run on remote host
         """
-        logger.debug('{0}: executing "{1}"'.format(self.target_address,
-                                                   command))
-        stdin, stdout, stderr = self.ssh.exec_command(command)
-        return dict(zip(['stdin', 'stdout', 'stderr'],
-                        [stdin, stdout, stderr]))
+        if self.ssh.get_transport() != None:
+            logger.debug('{0}: executing "{1}"'.format(self.target_address,
+                                                       command))
+            stdin, stdout, stderr = self.ssh.exec_command(command)
+            return dict(zip(['stdin', 'stdout', 'stderr'],
+                            [stdin, stdout, stderr]))
+        else:
+            raise SSHCommandError(self.target_address, command, "")
 
     def execute_async(self, command, callback=None):
         """
@@ -196,4 +202,5 @@ class RemoteShell():
         for future in self.futures:
             future.cancel()
         self.executor.shutdown(wait=10)
-        self.ssh.close()
+        if self.ssh.get_transport() != None:
+            self.ssh.close()

@@ -50,7 +50,73 @@ class SSHConnectionError(MargaritaShotgunError):
     def __init__(self, host, inner_exception):
         msg = (
             "Paramiko failed to connect to {} with the "
-            "exception: ".format(host, inner_exception)
+            "exception: {}".format(host, inner_exception)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class SSHCommandError(MargaritaShotgunError):
+    """
+    Raised when an exception is encountered executing a command on a remote host
+    """
+    def __init__(self, host, command, message):
+        msg = (
+            "Exception occurred while executing '{}' on {} "
+            "{}".format(command, host, message)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositoryError(MargaritaShotgunError):
+    """
+    Raised when malformed repository metadata is found
+    """
+    def __init__(self, metadata_url, reason):
+        msg = (
+            "Error parsing repository metadata"
+            " {0} {1}".format(metadata_url, reason)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositoryMissingSigningKeyError(MargaritaShotgunError):
+    """
+    Raised when signing public key is missing from repository
+    """
+    def __init__(self, url):
+        msg = (
+            "Repository missing signing key, expected signing key "
+            "at {0}, contact the repository maintainer or disable "
+            "gpg verification with --gpg-no-verify".format(url)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositoryMissingSignatureError(MargaritaShotgunError):
+    """
+    Raised when a detached signature is missing in remote repository"
+    """
+    def __init__(self, signature_url):
+        msg = (
+            "Repository missing signature {0}".format(signature_url)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositoryUntrustedSigningKeyError(MargaritaShotgunError):
+    """
+    Raised when repository signing key is not trusted
+    """
+    def __init__(self, url, fingerprint):
+        msg = (
+            "Repository signing key found at {0} is not trusted on the "
+            "local system, fingerprint: {1}".format(url, fingerprint)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class RepositorySignatureError(MargaritaShotgunError):
+    """
+    Raised when signature verification fails
+    """
+    def __init__(self, url, signature_url):
+        msg = (
+            "Signature verification failed for {0} with signature "
+            "{1}".format(url, signature_url)
         )
         MargaritaShotgunError.__init__(self, msg)
 

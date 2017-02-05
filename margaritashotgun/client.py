@@ -5,6 +5,8 @@ import margaritashotgun
 import margaritashotgun.remote_host
 from margaritashotgun.cli import Cli
 from margaritashotgun.exceptions import NoConfigurationError
+from margaritashotgun.exceptions import RepositoryUntrustedSigningKeyError
+from margaritashotgun.repository import Repository
 from margaritashotgun.workers import Workers
 
 
@@ -55,6 +57,31 @@ class Client():
         """
         logger = logging.getLogger(__name__)
         try:
+            # Check repository GPG settings before starting workers
+            # Handling this here prevents subprocesses from needing stdin access
+            repo_conf = self.config['repository']
+            repo = None
+            if repo_conf['enabled'] and repo_conf['gpg_verify']:
+                try:
+                    repo = Repository(repo_conf['url'],
+                                      repo_conf['gpg_verify'])
+                    repo.init_gpg()
+                except Exception as ex:
+                    # Do not prompt to install gpg keys unless running interactively
+                    if repo is not None and self.library is False:
+                        if isinstance(ex, RepositoryUntrustedSigningKeyError):
+                            installed = repo.prompt_for_install()
+                            if installed is False:
+                                logger.critical(("repository signature not "
+                                                 "installed, install the "
+                                                 "signature manually or use "
+                                                 "the --gpg-no-verify flag "
+                                                 "to bypass this check"))
+                                quit(1)
+                    else:
+                        logger.critical(ex)
+                        quit(1)
+
             conf = self.map_config()
             workers = Workers(conf, self.config['workers'], name=self.name, library=self.library)
             description = 'memory capture action'

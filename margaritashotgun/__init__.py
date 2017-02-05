@@ -22,13 +22,14 @@ def set_stream_logger(name='margaritashotgun', level=logging.INFO,
     """
 
     if format_string is None:
-        format_string = "%(asctime)s %(name)s [%(levelname)s] %(message)s"
+        format_string = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    time_format = "%Y-%m-%dT%H:%M:%S"
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
     handler = logging.StreamHandler()
     handler.setLevel(level)
-    formatter = logging.Formatter(format_string)
+    formatter = logging.Formatter(format_string, time_format)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 

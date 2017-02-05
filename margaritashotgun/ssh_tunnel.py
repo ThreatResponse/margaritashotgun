@@ -20,7 +20,11 @@ class SSHTunnel():
     def __init__(self):
         self.transport = None
         self.forward = None
+        self.username = None
+        self.address = None
         self.local_port = None
+        self.remote_address = None
+        self.remote_port = None
 
     def configure(self, transport, auth, address, port):
         """
@@ -73,10 +77,13 @@ class SSHTunnel():
                           "{3}@{4}".format(self.local_port,
                                            self.remote_address,
                                            self.remote_port,
-                                           self.username, self.address)))
-        if self.forward is not None:
-            self.forward.stop()
-            self.forward.join()
+                                           self.username,
+                                           self.address)))
+            if self.forward is not None:
+                self.forward.stop()
+                self.forward.join()
+            if self.transport is not None:
+                self.transport.close()
 
 
 class Forward(threading.Thread):
