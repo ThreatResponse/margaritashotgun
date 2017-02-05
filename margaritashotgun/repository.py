@@ -101,7 +101,7 @@ class Repository():
                "  From  : {2}".format(self.key_info['fingerprint'],
                                       self.key_info['uids'][0],
                                       repo_key_url)))
-        response = prompt(u'Is this ok: [y/N]')
+        response = prompt(u'Is this ok: [y/N] ')
         if response == 'y':
             self.install_key(self.raw_key)
             return True
