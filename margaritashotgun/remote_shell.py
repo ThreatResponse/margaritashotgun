@@ -68,23 +68,20 @@ class RemoteShell():
     def connect_with_auth(self, ssh, auth, address, port, sock):
         """
         """
-        try:
-            logger.debug(("{0}: paramiko client connecting to "
-                          "{0}:{1} with {2}".format(address,
-                                                    port,
-                                                    auth.method)))
-            if auth.method == AuthMethods.key:
-                self.connect_with_key(ssh, auth.username, auth.key, address,
-                                      port, sock)
-            elif auth.method == AuthMethods.password:
-                self.connect_with_password(ssh, auth.username, auth.password,
-                                           address, port, sock)
-            else:
-                raise AuthenticationMethodMissingError()
-            logger.debug(("{0}: paramiko client connected to "
-                          "{0}:{1}".format(address, port)))
-        except (AuthenticationException, SSHException, SocketError) as ex:
-            raise SSHConnectionError("{0}:{1}".format(address, port), ex)
+        logger.debug(("{0}: paramiko client connecting to "
+                      "{0}:{1} with {2}".format(address,
+                                                port,
+                                                auth.method)))
+        if auth.method == AuthMethods.key:
+            self.connect_with_key(ssh, auth.username, auth.key, address,
+                                  port, sock)
+        elif auth.method == AuthMethods.password:
+            self.connect_with_password(ssh, auth.username, auth.password,
+                                       address, port, sock)
+        else:
+            raise AuthenticationMethodMissingError()
+        logger.debug(("{0}: paramiko client connected to "
+                      "{0}:{1}".format(address, port)))
 
     def connect_with_password(self, ssh, username, password, address, port, sock,
                               timeout=20):
@@ -100,17 +97,12 @@ class RemoteShell():
         :type port: int
         :param port: remote server port
         """
-        try:
-            ssh.connect(username=username,
-                        password=password,
-                        hostname=address,
-                        port=port,
-                        sock=sock,
-                        timeout=timeout)
-        except AuthenticationException as ex:
-            raise SSHConnectionError(address, ex)
-        except SSHException as ex:
-            raise SSHConnectionError(address, ex)
+        ssh.connect(username=username,
+                    password=password,
+                    hostname=address,
+                    port=port,
+                    sock=sock,
+                    timeout=timeout)
 
     def connect_with_key(self, ssh, username, key, address, port, sock):
         """
