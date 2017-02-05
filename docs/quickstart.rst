@@ -8,22 +8,22 @@ Capture A Single Machine
 ************************
 
 A single machine can be captured using only the command line arguments for margaritashotgun.
-First specify the server and user with the ``-s`` and ``-u`` flags respectively.
-Next provide a path to an ssh key with ``-k`` (or use a password with the ``-p`` flag).
-Finally provide a lime kernel module with ``-m`` and specify an output file with ``-f``
+First specify the server and user with the ``--server`` and ``--username`` flags.
+Next provide a path to an ssh key with ``--key`` (or use a password with the ``--password`` flag).
+Finally provide a lime kernel module with ``--module`` and specify an output file with ``--filename``
 
 .. code-block:: bash
 
-   margaritashotgun -s 172.16.20.10 -u root -k root_access.pem -m lime-3.13.0-74-generic.ko -f 172.16.20.10-mem.lime
+   margaritashotgun --server 172.16.20.10 --username root --key root_access.pem --module lime-3.13.0-74-generic.ko --filename 172.16.20.10-mem.lime
 
 Save Memory In S3
 *****************
 
-To save a file to s3 simply replace the ``-f`` or ``filename`` flags with ``-b`` or ``--bucket``.  Ensure that you have aws credentials configured prior to executing the following command.
+To save a file to s3 replace the ``filename`` flag with ``--bucket``.  Ensure that you have aws credentials configured prior to executing the following command.
 
 .. code-block:: bash
 
-   margaritashotgun -s 172.16.20.10 -u root -k root_access.pem -m lime-3.13.0-74-generic.ko -b memory_capture_bucket
+   margaritashotgun --server 172.16.20.10 --username root --key root_access.pem --module lime-3.13.0-74-generic.ko --bucket memory_capture_bucket
 
 Capture Multiple Machines
 *************************
