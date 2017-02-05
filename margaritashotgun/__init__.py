@@ -33,6 +33,14 @@ def set_stream_logger(name='margaritashotgun', level=logging.INFO,
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    paramiko_log_level = logging.CRITICAL
+    paramiko_log = logging.getLogger('paramiko')
+    paramiko_log.setLevel(paramiko_log_level)
+    paramiko_handler = logging.StreamHandler()
+    paramiko_handler.setLevel(paramiko_log_level)
+    paramiko_handler.setFormatter(formatter)
+    paramiko_log.addHandler(paramiko_handler)
+
 def client(*args, **kwargs):
     """
     Creates a client to orchestrate LiME memory capture
