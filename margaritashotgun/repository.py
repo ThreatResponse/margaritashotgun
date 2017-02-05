@@ -348,6 +348,10 @@ class Repository():
             raise RepositoryMissingSignatureError(signature_url)
 
         verified = self.gpg.verify_data(sigfile, data)
+        try:
+            os.remove(sigfile)
+        except OSError:
+            pass
 
         if verified.valid is True:
             logger.debug("verified {0} against {1}".format(data_url,
