@@ -107,10 +107,13 @@ class RemoteShell():
         :type command: str
         :param command: command to be run on remote host
         """
-        logger.debug('{0}: executing "{1}"'.format(self.address, command))
-        stdin, stdout, stderr = self.ssh.exec_command(command)
-        return dict(zip(['stdin', 'stdout', 'stderr'],
-                        [stdin, stdout, stderr]))
+        if self.ssh.get_transport() != None:
+            logger.debug('{0}: executing "{1}"'.format(self.address, command))
+            stdin, stdout, stderr = self.ssh.exec_command(command)
+            return dict(zip(['stdin', 'stdout', 'stderr'],
+                            [stdin, stdout, stderr]))
+        else:
+            raise SSHCommandError(self.address, command, "")
 
     def execute_async(self, command, callback=None):
         """

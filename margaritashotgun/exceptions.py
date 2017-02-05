@@ -42,7 +42,18 @@ class SSHConnectionError(MargaritaShotgunError):
     def __init__(self, host, inner_exception):
         msg = (
             "Paramiko failed to connect to {} with the "
-            "exception: ".format(host, inner_exception)
+            "exception: {}".format(host, inner_exception)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
+class SSHCommandError(MargaritaShotgunError):
+    """
+    Raised when an exception is encountered executing a command on a remote host
+    """
+    def __init__(self, host, command, message):
+        msg = (
+            "Exception occurred while executing '{}' on {} "
+            "{}".format(command, host, message)
         )
         MargaritaShotgunError.__init__(self, msg)
 
