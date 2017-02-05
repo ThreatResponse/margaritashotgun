@@ -176,4 +176,5 @@ class RemoteShell():
         for future in self.futures:
             future.cancel()
         self.executor.shutdown(wait=10)
-        self.ssh.close()
+        if self.ssh.get_transport() != None:
+            self.ssh.close()
