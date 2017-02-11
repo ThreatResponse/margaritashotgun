@@ -88,16 +88,21 @@ def process(conf):
         host.cleanup()
 
         return (remote_addr, result)
-    except KeyboardInterrupt:
+    except SSHConnectionError as ex:
+        logger.error(ex)
+        logger.removeHandler(queue_handler)
+        queue_handler.close()
+        return (remote_addr, False)
+    except KeyboardInterrupt as ex:
         logger.removeHandler(queue_handler)
         queue_handler.close()
         host.cleanup()
         return (remote_addr, False)
-    except Exception as ex:
+    except (SSHCommandError, Exception) as ex:
+        logger.error(ex)
         logger.removeHandler(queue_handler)
         queue_handler.close()
         host.cleanup()
-        logger.critical(ex)
         return (remote_addr, False)
 
 class Host():
