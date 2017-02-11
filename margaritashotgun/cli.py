@@ -314,8 +314,8 @@ class Cli():
             hosts = config['hosts']
         except KeyError:
             raise InvalidConfigurationError('hosts', "",
-                                            reason=('hosts configuration section'
-                                                    'is required'))
+                                            reason=('hosts configuration '
+                                                    'section is required'))
 
         for key in config.keys():
             if key not in default_allowed_keys:
