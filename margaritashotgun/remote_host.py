@@ -10,6 +10,7 @@ from margaritashotgun.remote_shell import RemoteShell, Commands
 from margaritashotgun.ssh_tunnel import SSHTunnel
 from margaritashotgun.repository import Repository
 from margaritashotgun.memory import Memory, OutputDestinations
+from margaritashotgun.util import parser
 
 try:
     from logging.handlers import QueueHandler
@@ -120,6 +121,7 @@ class Host():
         self.shell = RemoteShell()
         self.commands = Commands
         self.tunnel = SSHTunnel()
+        self.net_parser = parser.ProcNetTcpParser()
 
     def connect(self, username, password, key, address, port, jump_host):
         """
@@ -206,12 +208,12 @@ class Host():
                                                           listen_port)
         lime_loaded = False
         while tries < max_tries and lime_loaded is False:
-            lime_loaded = self.check_for_lime(pattern, listen_port)
+            lime_loaded = self.check_for_lime(pattern)
             tries = tries + 1
             time.sleep(wait)
         return lime_loaded
 
-    def check_for_lime(self, pattern, listen_port):
+    def check_for_lime(self, pattern):
         """
         Check to see if LiME has loaded on the remote system
 
@@ -220,14 +222,19 @@ class Host():
         :type listen_port: int
         :param listen_port: port LiME is listening for connections on
         """
-        check = self.commands.lime_check.value.format(listen_port)
+        check = self.commands.lime_check.value
+        lime_loaded = False
         result = self.shell.execute(check)
         stdout = self.shell.decode(result['stdout'])
-        stderr = self.shell.decode(result['stderr'])
-        if pattern in stdout:
-            return True
-        else:
-            return False
+        connections = self.net_parser.parse(stdout)
+
+        for conn in connections:
+            local_addr, remote_addr = conn
+            if local_addr == pattern:
+                lime_loaded = True
+                break
+
+        return lime_loaded
 
     def upload_module(self, local_path=None, remote_path="/tmp/lime.ko"):
         """

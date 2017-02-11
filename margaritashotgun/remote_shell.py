@@ -14,7 +14,7 @@ class Commands(Enum):
     mem_size = "cat /proc/meminfo | grep MemTotal | awk '{ print $2 }'"
     kernel_version = "uname -r"
     lime_pattern = "{0}:{1}"
-    lime_check = "netstat -lnt | grep {0}"
+    lime_check = "cat /proc/net/tcp"
     load_lime = 'sudo insmod {0} "path=tcp:{1}" format={2}'
     unload_lime = "sudo pkill insmod; sudo rmmod lime"
 
