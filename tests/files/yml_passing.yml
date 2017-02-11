@@ -1,0 +1,11 @@
+hosts:
+  - addr:     172.16.190.20
+    username: vagrant
+    password: vagrant
+    jump_host:
+      addr: 172.16.180.10
+      username: vagrant
+      password: vagrant
+workers: 1
+repository:
+  enabled: True

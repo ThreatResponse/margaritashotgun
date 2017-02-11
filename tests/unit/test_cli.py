@@ -26,16 +26,12 @@ def test_args_server():
     arguments = cli.parse_args(args)
     assert arguments.server == "app.example.com"
 
-    args = ["-s", "app.example.com"]
-    arguments = cli.parse_args(args)
-    assert arguments.server == "app.example.com"
-
 def test_args_optional():
     cli = Cli()
-    args = ["-s", "app.example.com", "--port", '2222', "--username", "ec2-user",
+    args = ["--server", "app.example.com", "--port", '2222', "--username", "ec2-user",
             "--module", "lime.ko", "--password", "hunter2", "--key", "rsa.key",
             "--filename", "mem.lime", "--workers", "auto", "--bucket", "marsho",
-            "--log_dir", "logs", "--log_prefix", "case_num"]
+            "--log-dir", "logs", "--log-prefix", "case_num"]
     arguments = cli.parse_args(args)
     assert arguments.server == "app.example.com"
     assert arguments.port == "2222"
@@ -46,24 +42,6 @@ def test_args_optional():
     assert arguments.filename == "mem.lime"
     assert arguments.workers == "auto"
     assert arguments.bucket == "marsho"
-    assert arguments.log_dir == "logs"
-    assert arguments.log_prefix == "case_num"
-
-    args = ["-s", "app.example.com", "-P", '2222', "-u", "ec2-user",
-            "-m", "lime.ko", "-p", "hunter2", "-k", "rsa.key", "-f",
-            "mem.lime", "-w", "2", "-o", "dump", "-d", "logs",
-            "--log_prefix", "case_num"]
-
-    arguments = cli.parse_args(args)
-    assert arguments.server == "app.example.com"
-    assert arguments.port == "2222"
-    assert arguments.username == "ec2-user"
-    assert arguments.module == "lime.ko"
-    assert arguments.password == "hunter2"
-    assert arguments.key == "rsa.key"
-    assert arguments.filename == "mem.lime"
-    assert arguments.workers == "2"
-    assert arguments.output_dir == "dump"
     assert arguments.log_dir == "logs"
     assert arguments.log_prefix == "case_num"
 
@@ -136,13 +114,12 @@ def test_validate_config():
     failing_configs.append(cli.load_config('tests/files/validate_failing_hosts.yml'))
     failing_configs.append(cli.load_config('tests/files/validate_failing_host.yml'))
     failing_configs.append(cli.load_config('tests/files/validate_failing_logging.yml'))
-    failing_configs.append(cli.load_config('tests/files/validate_failing_output.yml'))
     failing_configs.append(cli.load_config('tests/files/validate_failing_root.yml'))
 
     cli.validate_config(passing_config)
 
-    with pytest.raises(InvalidConfigurationError):
-        for conf in failing_configs:
+    for conf in failing_configs:
+        with pytest.raises(InvalidConfigurationError):
             cli.validate_config(conf)
 
 

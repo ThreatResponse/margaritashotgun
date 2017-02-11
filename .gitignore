@@ -32,3 +32,4 @@ docs/_build
 .vagrant
 *.ko
 *.log
+!tests/files/*.yml
