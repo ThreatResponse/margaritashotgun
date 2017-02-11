@@ -1,4 +1,5 @@
 import argparse
+import copy
 import logging
 import os
 import yaml
@@ -120,10 +121,12 @@ class Cli():
 
         if arguments is not None:
             args_config = self.configure_args(arguments)
-            working_config = self.merge_config(default_config, args_config)
+            base_config = copy.deepcopy(default_config)
+            working_config = self.merge_config(base_config, args_config)
         if config is not None:
             self.validate_config(config)
-            working_config = self.merge_config(default_config, config)
+            base_config = copy.deepcopy(default_config)
+            working_config = self.merge_config(base_config, config)
 
         # override configuration with environment variables
         repo = self.get_env_default('LIME_REPOSITORY', 'disabled')
@@ -139,34 +142,27 @@ class Cli():
     def merge_config(self, base, config):
         """
         """
-
-        for key in config:
-            if key in base:
-                # iterate through hosts and merge against default_host_config
-                if isinstance(config[key], list) and key == 'hosts':
-                    hosts = []
-                    for host in config[key]:
-                        hosts.append(self.merge_config(default_host_config,
-                                                       host))
-                    base[key] = hosts
-                # merge 'jump_host' dict against default_jump_host_config
-                elif isinstance(config[key], dict) and key == 'jump_host':
-                    # only merge with default if jump_host has a value
-                    if config[key] is not None:
-                        base[key] = self.merge_config(default_jump_host_config,
-                                                      config[key])
-                    else:
-                        base[key] = config[key]
-                # recursively merge dictionaries against the base config
-                elif isinstance(base[key], dict) and isinstance(config[key], dict):
-                    base[key] = self.merge_config(base[key], config[key])
-                # store user leaf nodes in the base config
+        for key, value in config.items():
+            # Merge dictionaries into the default config
+            if isinstance(value, dict):
+                # use jump_host specific default config
+                if key == 'jump_host':
+                    jump_host_config = copy.deepcopy(default_jump_host_config)
+                    base[key] = self.merge_config(jump_host_config, value)
                 else:
-                    base[key] = config[key]
+                    node = base.setdefault(key, {})
+                    self.merge_config(node, value)
+            # Iterate over host lists, merging with the host default config
+            elif isinstance(value, list):
+                merged_list = []
+                for item in value:
+                    host_config = copy.deepcopy(default_host_config)
+                    merged_list.append(self.merge_config(host_config, item))
+                base[key] = merged_list
+            # Set any user supplied value in the default config
             else:
-                reason = ("{0} key in user config but not in base. base "
-                          "config keys: {1}".format(key, base.keys()))
-                raise ConfigurationMergeError(reason)
+                base[key] = value
+
         return base
 
     def get_env_default(self, variable, default):
