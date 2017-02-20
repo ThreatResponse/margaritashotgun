@@ -104,7 +104,8 @@ class RemoteShell():
                     sock=sock,
                     timeout=timeout)
 
-    def connect_with_key(self, ssh, username, key, address, port, sock):
+    def connect_with_key(self, ssh, username, key, address, port, sock,
+                         timeout=20):
         """
         Create an ssh session to a remote host with a username and rsa key
 
