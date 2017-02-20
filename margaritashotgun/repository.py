@@ -5,7 +5,7 @@ import logging
 import os
 import requests
 import time
-import untangle
+import xmltodict
 from datetime import datetime
 from io import BytesIO
 from margaritashotgun.exceptions import *
@@ -173,27 +173,27 @@ class Repository():
         """
         try:
             metadata = dict()
-            mdata = untangle.parse(metadata_xml).metadata
-            metadata['revision'] = mdata.revision.cdata
+            mdata = xmltodict.parse(metadata_xml)['metadata']
+            metadata['revision'] = mdata['revision']
             metadata['manifests'] = dict()
 
             # check if multiple manifests are present
-            if type(mdata.data) is list:
-                manifests = mdata.data
+            if type(mdata['data']) is list:
+                manifests = mdata['data']
             else:
-                manifests = [mdata.data]
+                manifests = [mdata['data']]
 
             for manifest in manifests:
                 manifest_dict = dict()
-                manifest_dict['type'] = manifest['type']
-                manifest_dict['checksum'] = manifest.checksum.cdata
-                manifest_dict['open_checksum'] = manifest.open_checksum.cdata
-                manifest_dict['location'] = manifest.location['href']
+                manifest_dict['type'] = manifest['@type']
+                manifest_dict['checksum'] = manifest['checksum']
+                manifest_dict['open_checksum'] = manifest['open_checksum']
+                manifest_dict['location'] = manifest['location']['@href']
                 manifest_dict['timestamp'] = datetime.fromtimestamp(
-                                                 int(manifest.timestamp.cdata))
-                manifest_dict['size'] = int(manifest.size.cdata)
-                manifest_dict['open_size'] = int(manifest.open_size.cdata)
-                metadata['manifests'][manifest['type']] = manifest_dict
+                                                 int(manifest['timestamp']))
+                manifest_dict['size'] = int(manifest['size'])
+                manifest_dict['open_size'] = int(manifest['open_size'])
+                metadata['manifests'][manifest['@type']] = manifest_dict
 
         except Exception as e:
             raise RepositoryError("{0}/{1}".format(self.url,self.metadata_dir,
@@ -244,22 +244,22 @@ class Repository():
 
         manifest = dict()
         try:
-            mdata = untangle.parse(manifest_xml).modules
-            for module in mdata.children:
+            mdata = xmltodict.parse(manifest_xml)['modules']['module']
+            for module in mdata:
                 mod = dict()
-                mod['type'] = module['type']
-                mod['name'] = module.name.cdata
-                mod['arch'] = module.arch.cdata
-                mod['checksum'] = module.checksum.cdata
-                mod['version'] = module.version.cdata
-                mod['packager'] = module.packager.cdata
-                mod['location'] = module.location['href']
-                mod['signature'] = module.signature['href']
-                mod['platform'] = module.platform.cdata
+                mod['type'] = module['@type']
+                mod['name'] = module['name']
+                mod['arch'] = module['arch']
+                mod['checksum'] = module['checksum']
+                mod['version'] = module['version']
+                mod['packager'] = module['packager']
+                mod['location'] = module['location']['@href']
+                mod['signature'] = module['signature']['@href']
+                mod['platform'] = module['platform']
                 manifest[mod['version']] = mod
 
         except Exception as e:
-            print(e)
+            raise
 
         return manifest
 

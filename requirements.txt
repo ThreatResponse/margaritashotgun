@@ -1,13 +1,14 @@
 pytest
 pytest-cov
 mock
-boto3>=1.3.0
+boto3>=1.4.0
 paramiko>=1.16.0
 pyyaml>=3.11
 s3fs>=0.0.2
 progressbar-latest
 enum34
 requests
-untangle
+xmltodict
 logutils
 python-gnupg
+prompt_toolkit
