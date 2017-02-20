@@ -7,7 +7,7 @@ import requests
 import time
 import untangle
 from datetime import datetime
-from StringIO import StringIO
+from io import BytesIO
 from margaritashotgun.exceptions import *
 from prompt_toolkit import prompt
 
@@ -228,7 +228,7 @@ class Repository():
         :type raw_manifest: str
         :param raw_manifest: compressed gzip manifest file content
         """
-        buf = StringIO(raw_manifest)
+        buf = BytesIO(raw_manifest)
         f = gzip.GzipFile(fileobj=buf)
         manifest = f.read()
 
