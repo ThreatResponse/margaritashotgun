@@ -4,6 +4,7 @@ import logging
 import os
 import yaml
 from yaml import YAMLError
+from margaritashotgun import __version__
 from margaritashotgun.exceptions import *
 
 logger = logging.getLogger(__name__)
@@ -53,8 +54,8 @@ class Cli():
         root.add_argument('-c', '--config', help='path to config.yml')
         root.add_argument('--server',
                           help='hostname or ip of target server')
-        root.add_argument('--version', action='store_true',
-                          help='show version')
+        root.add_argument('--version', action='version',
+                          version="%(prog)s {ver}".format(ver=__version__))
 
         opts = parser.add_argument_group()
         opts.add_argument('--port', help='ssh port on remote server')
