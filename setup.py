@@ -9,7 +9,7 @@ class install(_install):
         _install.run(self)
 
 setup(name="margaritashotgun",
-      version="0.3.1",
+      version="0.4.0",
       author="Joel Ferrier",
       author_email="joel@ferrier.io",
       packages=["margaritashotgun", "margaritashotgun/util"],
@@ -17,7 +17,7 @@ setup(name="margaritashotgun",
       description="Remote memory aquisition wrapper for LiME",
       scripts=['bin/margaritashotgun'],
       url="https://github.com/ThreatResponse/margaritashotgun",
-      download_url="https://github.com/ThreatResponse/margaritashotgun/archive/v0.3.1.tar.gz",
+      download_url="https://github.com/ThreatResponse/margaritashotgun/archive/v0.4.0.tar.gz",
       use_2to3=True,
       install_requires=['boto3>=1.3.0',
                         'paramiko>=1.16.0',
