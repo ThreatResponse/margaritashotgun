@@ -11,7 +11,7 @@ Read the full documentation on `read the docs <https://margaritashotgun.readthed
 Quickstart
 **********
 
-For more information see the `user guide <https://margaritashotgun.readthedocs.io/en/latest/user_guide.html/>`__.
+For more information see the `user guide <https://margaritashotgun.readthedocs.io/en/latest/user_guide.html>`__.
 
 Installation
 ~~~~~~~~~~~~
