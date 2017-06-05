@@ -28,7 +28,7 @@ class SSHTunnel():
 
     def configure(self, transport, auth, address, port):
         """
-        Connect paramico transport
+        Connect paramiko transport
 
         :type auth: :py:class`margaritashotgun.auth.AuthMethods`
         :param auth: authentication object
@@ -59,6 +59,7 @@ class SSHTunnel():
         self.local_port = local_port
         self.remote_address = remote_address
         self.remote_port = remote_port
+
         logger.debug(("Starting ssh tunnel {0}:{1}:{2} for "
                       "{3}@{4}".format(local_port, remote_address, remote_port,
                                        self.username, self.address)))
@@ -116,6 +117,12 @@ class Forward(threading.Thread):
             chain_host = remote_address
             chain_port = remote_port
             ssh_transport = transport
+            # Increase window size and support compression data stream.
+            ssh_transport.use_compression()
+            ssh_transport.window_size = 2147483647
+            ssh_transport.packetizer.REKEY_PACKETS = pow(2, 40)
+            ssh_transport.packetizer.REKEY_BYTES = pow(2, 40)
+
         self.server = ForwardServer(('', local_port), SubHandler)
         self.server.serve_forever()
 
@@ -136,6 +143,7 @@ class Handler (socketserver.BaseRequestHandler):
                                                    (self.chain_host,
                                                     self.chain_port),
                                                    self.request.getpeername())
+
         except Exception as ex:
             logger.debug(("Incoming request to {0}:{1} failed: "
                           "{2}".format(self.chain_host, self.chain_port, ex)))
@@ -153,12 +161,12 @@ class Handler (socketserver.BaseRequestHandler):
             try:
                 r, w, x = select.select([self.request, channel], [], [])
                 if self.request in r:
-                    data = self.request.recv(1024)
+                    data = self.request.recv(65536)
                     if len(data) == 0:
                         break
                     channel.send(data)
                 if channel in r:
-                    data = channel.recv(1024)
+                    data = channel.recv(65536)
                     if len(data) == 0:
                         break
                     self.request.send(data)

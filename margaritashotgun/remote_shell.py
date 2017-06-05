@@ -126,6 +126,11 @@ class RemoteShell():
                     timeout=timeout)
 
     def transport(self):
+        transport = self.ssh.get_transport()
+        transport.use_compression(True)
+        transport.window_size = 2147483647
+        transport.packetizer.REKEY_BYTES = pow(2, 40)
+        transport.packetizer.REKEY_PACKETS = pow(2, 40)
         return self.ssh.get_transport()
 
     def execute(self, command):
@@ -205,7 +210,7 @@ class RemoteShell():
                                                             local_path,
                                                             remote_path))
         try:
-            sftp = self.ssh.open_sftp()
+            sftp = paramiko.SFTPClient.from_transport(self.transport())
             sftp.put(local_path, remote_path)
             sftp.close()
         except SSHException as ex:
