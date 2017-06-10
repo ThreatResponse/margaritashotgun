@@ -28,13 +28,21 @@ Metadata files have been introduced to remove s3 hosting as a requirement for re
 The new repository structure introduces several new requirements.
 
 1. **Optional** The public portion of the GPG used for signing modules and metadata should present at the root of the repository with the filename ``REPO_SIGNING_KEY.asc``.  If the signing key is not present the ``--gpg-no-verify`` flag must be used with Margarita Shotgun.
-2. **Required** A folder must exist in at the path ``/repodata`` which contains the following files.
+2. **Optional** A JSON file with key metadata including the key fingerprint. REPO_SIGNING_KEY.json.
+Example:
+```
+{
+"uids": ["Lime Signing Key (Threat Response Official Lime Signing Key) <security@threatresponse.cloud>"],
+"fingerprint": "80DA92CB09161F241C8F9BC918BA980367172B17"
+}
+```
+3. **Required** A folder must exist in at the path ``/repodata`` which contains the following files.
 
    1. **Required** ``repomd.xml`` contains repository metadata including one or more manifests of kernel modules.
    2. **Optional** ``repomd.xml.sig`` detached signature for ``repomd.xml``.  If not present in the repository the ``--gpg-no-verify`` flag must be used with Margarita Shotgun.
    3. **Optional** Manifest files.  Techinally manifests can be stored at any relative path but it is recommended that they be stored in the ``repodata`` directory.
 
-3. **Optional** A ``modules`` directory is recommended which will contain the following files.  Note the following files can have any location relative to the repository root, the ``modules`` directory is simply best practice.
+4. **Optional** A ``modules`` directory is recommended which will contain the following files.  Note the following files can have any location relative to the repository root, the ``modules`` directory is simply best practice.
 
    1. **Required** Compiled lime kernel modules.  Module filenames are arbitrary as the files are explicitly listed in a manifest
    2. **Optional** Detached kernel module signatures.  If signatures are not present the ``--gpg-no-verify`` flag must be used with Margarita Shotgun.  The signature filename is arbitary as it is explicitly listed in a manifest.
@@ -44,6 +52,7 @@ Below is an example directory listing of the repository structure.
 .. code-block:: text
 
     ├── REPO_SIGNING_KEY.asc
+    ├── REPO_SIGNING_KEY.json
     ├── modules
     │   ├── lime-2.6.32-131.0.15.el6.centos.plus.x86_64.ko
     │   ├── lime-2.6.32-131.0.15.el6.centos.plus.x86_64.ko.sig

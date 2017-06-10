@@ -88,6 +88,18 @@ class RepositoryMissingSigningKeyError(MargaritaShotgunError):
         )
         MargaritaShotgunError.__init__(self, msg)
 
+class RepositoryMissingKeyMetadataError(MargaritaShotgunError):
+    """
+    Raised when signing public key is missing from repository
+    """
+    def __init__(self, url):
+        msg = (
+            "Repository missing a key metadata file with signature "
+            "at {0}, contact the repository maintainer or disable "
+            "gpg verification with --gpg-no-verify".format(url)
+        )
+        MargaritaShotgunError.__init__(self, msg)
+
 class RepositoryMissingSignatureError(MargaritaShotgunError):
     """
     Raised when a detached signature is missing in remote repository"

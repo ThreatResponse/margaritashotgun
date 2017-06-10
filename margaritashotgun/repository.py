@@ -1,15 +1,18 @@
 import gnupg
 import gzip
 import hashlib
+import json
 import logging
 import os
 import requests
 import time
 import xmltodict
+
 from datetime import datetime
 from io import BytesIO
 from margaritashotgun.exceptions import *
 from prompt_toolkit import prompt
+from margaritashotgun.settings import *
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +34,8 @@ class Repository():
         self.gpg_verify = gpg_verify
         self.metadata_dir = 'repodata'
         self.metadata_file = 'repomd.xml'
-        self.repo_signing_key = 'REPO_SIGNING_KEY.asc'
+        self.repo_signing_key = PUBLIC_SIGNING_KEY_FILE
+        self.key_metadata = PUBLIC_SIGNING_KEY_METADATA
 
         self.gpg = None
         self.key_path = None
@@ -52,23 +56,43 @@ class Repository():
 
     def get_signing_key(self):
         """
-        Download a local copy of repo signing key and generate key metadata
+        Download a local copy of repo signing key for installation
         """
-        tmp_path = "/tmp/{0}".format(self.repo_signing_key)
+
+        """
+        Download a local copy of repo signing key key metadata.
+        Fixes #17 Scan Keys no available in all GPG versions.
+        """
+        tmp_key_path = "/tmp/{0}".format(self.repo_signing_key)
+        tmp_metadata_path = "/tmp/{0}".format(self.key_metadata)
+
         repo_key_path = "{0}/{1}".format(self.url, self.repo_signing_key)
-        req = requests.get(repo_key_path)
-        if req.status_code is 200:
+        repo_metadata_path = "{0}/{1}".format(self.url, self.key_metadata)
+
+
+        req_key = requests.get(repo_key_path)
+        req_metadata = requests.get(repo_metadata_path)
+
+        # Fetch the key to disk
+        if req_key.status_code is 200:
             logger.debug(("found repository signing key at "
-                         "{0}".format(repo_key_path)))
-            self.raw_key = req.content
-            with open(tmp_path, 'wb') as f:
+                          "{0}".format(repo_key_path)))
+            self.raw_key = req_key.content
+            with open(tmp_key_path, 'wb') as f:
                 f.write(self.raw_key)
-            key_info = self.gpg.scan_keys(tmp_path)
-            # we only scan one key, return a single key_info
-            key_info = key_info[0]
         else:
             raise RepositoryMissingSigningKeyError(repo_key_path)
-        return (tmp_path, key_info)
+
+        # Fetch the fingerprint from the metadata
+        if req_metadata.status_code is 200:
+            logger.debug(("found key metadata at "
+                          "{0}".format(repo_metadata_path)))
+            print(req_metadata.content)
+            key_info = json.loads(req_metadata.content.decode('utf-8'))
+        else:
+            RepositoryMissingKeyMetadataError
+
+        return (tmp_key_path, key_info)
 
     def check_signing_key(self):
         """

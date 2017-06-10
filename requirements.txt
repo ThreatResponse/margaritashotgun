@@ -10,5 +10,6 @@ enum34
 requests
 xmltodict
 logutils
-python-gnupg
+python-gnupg==0.3.9
 prompt_toolkit
+python-decouple

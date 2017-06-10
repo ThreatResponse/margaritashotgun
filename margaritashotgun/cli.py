@@ -6,7 +6,7 @@ import yaml
 from yaml import YAMLError
 from margaritashotgun import __version__
 from margaritashotgun.exceptions import *
-
+from margaritashotgun.settings import *
 logger = logging.getLogger(__name__)
 
 default_allowed_keys = ["aws", "hosts", "workers", "logging", "repository"]
@@ -28,7 +28,7 @@ default_config = {"aws": {"bucket": None},
                       "prefix": None},
                   "repository": {
                       "enabled": False,
-                      "url": "https://threatresponse-lime-modules.s3.amazonaws.com/",
+                      "url": REPOSITORY_BUCKET_URI,
                       "gpg_verify": True,
                       "manifest": "primary"
                   }}
