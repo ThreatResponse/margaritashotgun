@@ -9,7 +9,7 @@ class install(_install):
         _install.run(self)
 
 setup(name="margaritashotgun",
-      version="0.4.0",
+      version="0.4.1",
       author="Joel Ferrier",
       author_email="joel@ferrier.io",
       packages=["margaritashotgun", "margaritashotgun/util"],
