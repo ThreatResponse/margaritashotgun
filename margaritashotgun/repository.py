@@ -381,7 +381,7 @@ class Repository():
             logger.debug("verified {0} against {1}".format(data_url,
                                                            signature_url))
         else:
-            raise RepositorySignatureError(file_url, signature_url)
+            raise RepositorySignatureError(data_url, signature_url)
 
     def verify_file_signature(self, signature_url, file_url, filename):
         """
