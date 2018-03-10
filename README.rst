@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/ThreatResponse/margaritashotgun.svg?branch=master
+    :target: https://travis-ci.org/ThreatResponse/margaritashotgun
+
 Margarita Shotgun
 =================
 
