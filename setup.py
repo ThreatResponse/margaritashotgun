@@ -1,4 +1,5 @@
 from distutils.command.build import build
+import re
 from setuptools import setup
 from setuptools.command.install import install as _install
 
@@ -8,9 +9,15 @@ class install(_install):
         self.run_command('build')
         _install.run(self)
 
+VERSION = re.search(
+    r"^__version__ = ['\"]([^'\"]*)['\"]",
+    open('margaritashotgun/_version.py', 'r').read(),
+    re.MULTILINE
+).group(1)
+
 setup(
     name="margaritashotgun",
-    version="0.4.1",
+    version=VERSION,
     author="Joel Ferrier",
     author_email="joel@ferrier.io",
     packages=["margaritashotgun", "margaritashotgun/util"],

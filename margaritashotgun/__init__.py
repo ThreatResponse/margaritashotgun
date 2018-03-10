@@ -1,7 +1,7 @@
 __author__ = 'Joel Ferrier'
-__version__ = '0.4.0'
 
 import logging
+from margaritashotgun._version import __version__
 from margaritashotgun.client import Client
 
 
