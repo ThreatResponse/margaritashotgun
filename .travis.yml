@@ -1,0 +1,30 @@
+language: python
+python:
+- '3.6'
+cache: pip
+before_install:
+- if [[ -z $TRAVIS_TAG ]]; then sed -i "s/['\"]\([^\"]*\)['\"]/\"\1b$TRAVIS_BUILD_NUMBER\"/g" margaritashotgun/_version.py; fi
+install:
+- pip install -r requirements.txt
+- python -W ignore::UserWarning:distutils.dist setup.py install
+script:
+- cat margaritashotgun/_version.py
+- pytest tests/
+
+deploy:
+  - provider: pypi
+    distributions: sdist bdist_wheel
+    user: threatresponse
+    password:
+      secure: h1waPBOnAqoDVgxS00kOWwpbhnHq7CjDTL9Ohg1of1Hm7JoBgi50sFAKnyJejLn+86kB6pxGNVDAmtSRdgf6hUVXi+PeOjVd54/jcBapSmipGvCDdL2tR2FRGdX9N5R8vtg6JYsRrzFjScPrKJGOgu1clZjTOGPb3/HZzdKfvKAWX4mx56dz8aIXT/AhvlocLKGNTMyLtdUTfFfTZZjSOfnP0nO4IdCcZ7Hh+h2Lki5h02qhGVDxk1lEqy7+FY1Tg7QFt8FJvodOaRKGmpvl7U/5TQjwuccRAHtDbCEGhWKkIPXVTjPAVOrNqpv+iyHCMkRjE0hDq6Wo28WNjaAyvOb4pSY9fp6nbk/ar9649EuMPsQWFV0MB7VAjMTyVKozKFq/ey3MyguMxp5/o1OdKFCTHgn98cVECBC2A3G51xGrlK+L7Ih6y1zzZZkFvivTGucoYo7CFXnc00W7x/ZvbcU/BHfOMJpuKBiePdXzPUx7YKnyzp8NOw/lugrg9Mv5aIG9glfwGqf91MUdpiMe/8BjPywzAog2DURZ2mAn2axUtxKx6Wjut4swv8euKZEk935JS3Ati3VCnETrNkFLD+Vbq/YuMWw/7fmOK1KpYIaMaCisVl3zCTHhKf7I+kNO2MBSJ+whJqRl0Tgdv0MSnXAFfVtDkJd1ctiQfusIW8g=
+    on:
+      tags: true
+  - provider: pypi
+    server: https://test.pypi.org/legacy/
+    distributions: sdist bdist_wheel
+    user: threatresponse
+    password:
+      secure: Y0iNm/dERG4HMUp5lRzBL/+HLrGG0Sjp6sAVA97R2rmFAoBSLiIKsTMlylt0gIlSJ9KlxiCQkMRLIAqKsmm96SV2C/EqdgVy7DmEVQan0ecOBRkgSY9yi5p2eqHj9sjifH61rh+INtGSgcg2LR2StF/aNvWZ6FZpcZxhG8uCkPJuhVbwvXxVzVMiSEBX4gryeFYJ3ZZ7HTrwC/yzDJwdrLQscAZpC80QAhaALem/NS9TaJYhe5pEskZ28gHj0+SSGFLkWx1/NehsrBbJcPcNOvaFNUai7NC23yCL2XovJUUhVpUbWsOn8qNwFKacI1eU0tUZXlOOkxXuxL+iIb49EtWJdy+kkJVnqXBNZ6uEiqcxiyoMkPzhQpDPbqwDn0fvVLizTDD8RrWMAObpn5XvqVuzKgO0D2JLCpbzXCs0Iq1S5o8DTUu+ma4K0R8ndI9cnAt7VdhQ+OFFRCX+uPWP9ThUQnpfxGf4jfQ8xe6JYXED8xdU+vjgcPqK44X3cUzJARw4N3Q7J+HR6GTu+NyI7eWkOeR91Q/NBM1Vy4XT9wQJJ7LzAscKEawuNkR/GenhuumHw9uKbaZ+TeZ/JPj7nDU8af8+GjCD0e8uftPs0w8Mo8X+2oZ7rIEyI+5b1qQ6U6sffXq6aLnLfDwQqmXcxb0AQzR6Zhms0UzJ0UwwYo4=
+    skip_cleanup: true
+    on:
+      all_branches: true

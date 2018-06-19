@@ -1,5 +1,5 @@
-from distutils.command.build import build
 import re
+from distutils.command.build import build
 from setuptools import setup
 from setuptools.command.install import install as _install
 

@@ -2,7 +2,6 @@
 *.DS_Store
 *.pyc
 *.lime
-*.yml
 
 .Python
 env/
